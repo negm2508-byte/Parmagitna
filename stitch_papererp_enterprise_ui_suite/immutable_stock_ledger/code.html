@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary-fixed":"#2a1700","surface-container-low":"#191b23","on-tertiary-fixed-variant":"#005236","on-secondary-container":"#b0b8cf","surface-container":"#1d1f27","on-tertiary-fixed":"#002113","surface-container-high":"#272a32","error":"#ffb4ab","surface-variant":"#32353d","primary-container":"#c88a35","tertiary-fixed-dim":"#4edea3","tertiary":"#4edea3","on-tertiary-container":"#003723","surface-bright":"#363941","secondary-fixed-dim":"#bec6de","primary-fixed":"#ffddb7","inverse-primary":"#855400","primary":"#feb95f","outline":"#9e8e7e","on-secondary-fixed-variant":"#3f475a","primary-fixed-dim":"#feb95f","surface-container-highest":"#32353d","surface-container-lowest":"#0b0e15","outline-variant":"#514537","on-primary":"#472a00","tertiary-fixed":"#6ffbbe","on-surface":"#e1e2ec","surface-tint":"#feb95f","secondary-container":"#41495c","on-primary-container":"#452900","on-secondary":"#283043","on-tertiary":"#003824","on-error-container":"#ffdad6","background":"#10131a","on-error":"#690005","on-background":"#e1e2ec","on-primary-fixed-variant":"#653e00","on-surface-variant":"#d6c3b2","secondary-fixed":"#dae2fb","surface-dim":"#10131a","error-container":"#93000a","secondary":"#bec6de","on-secondary-fixed":"#131b2d","tertiary-container":"#00ac77","surface":"#10131a","inverse-on-surface":"#2d3038","inverse-surface":"#e1e2ec"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"gutter":"1rem","margin":"1.5rem","gutter-expanded":"1.5rem","space-md":"0.75rem","space-xl":"2rem","space-xs":"0.25rem","margin-mobile":"0.75rem","space-lg":"1.25rem","space-sm":"0.5rem","gutter-compact":"0.5rem"},fontFamily:{"headline-lg-mobile":["IBM Plex Sans"],"display-hero-mobile":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"label-numeric-lg":["JetBrains Mono"],"label-numeric-sm":["JetBrains Mono"],"body-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"headline-sm":["IBM Plex Sans"],"label-numeric-md":["JetBrains Mono"],"display-hero":["IBM Plex Sans"],"body-lg":["IBM Plex Sans"],"label-caps":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"]},fontSize:{"headline-lg-mobile":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-hero-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-sm":["11px",{"lineHeight":"16px","fontWeight":"400"}],"label-numeric-lg":["18px",{"lineHeight":"24px","letterSpacing":"0.02em","fontWeight":"600"}],"label-numeric-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.03em","fontWeight":"500"}],"body-md":["13px",{"lineHeight":"20px","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","fontWeight":"600"}],"label-numeric-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"500"}],"display-hero":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-lg":["15px",{"lineHeight":"24px","fontWeight":"400"}],"label-caps":["10px",{"lineHeight":"14px","letterSpacing":"0.08em","fontWeight":"600"}],"headline-md":["20px",{"lineHeight":"28px","fontWeight":"500"}]}}}};</script></head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 left-0 right-0 h-16 z-50 bg-surface-container-lowest/95 backdrop-blur-md flex items-center justify-between px-margin border-b border-surface-variant/40"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-md"><div class="w-9 h-9 bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container text-[20px]">precision_manufacturing</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">PaperERP Enterprise</span><span class="font-label-caps text-label-caps text-on-surface-variant">مصنع مصر للورق والكرتون • وحدة التحكم الرئيسية PM1</span></div></div><div class="h-6 w-px bg-surface-variant/50 hidden md:block"></div><div class="hidden lg:flex items-center gap-space-md font-label-numeric-sm text-label-numeric-sm"><div class="flex items-center gap-space-xs px-2 py-1 bg-surface-container-low border border-surface-variant/60"><span class="w-1.5 h-1.5 bg-tertiary"></span><span class="text-tertiary">LAN 192.168.9.223</span><span class="text-on-surface-variant">(متصل - صالة الإنتاج PM1)</span></div><div class="flex items-center gap-space-xs px-2 py-1 bg-surface-container-low border border-surface-variant/60"><span class="material-symbols-outlined text-primary text-[14px]">schedule</span><span class="text-on-surface">وردية المساء • خط PM1</span></div></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex flex-col items-end px-3 py-1 bg-surface-container-low border border-surface-variant/40"><span class="font-label-numeric-md text-label-numeric-md text-primary tracking-wider" id="live-mill-clock">14:48:22.840</span><span class="font-label-caps text-label-caps text-on-surface-variant">UTC+02:00 CAIRO MILL TIME</span></div><div class="flex items-center gap-space-xs"><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface" title="System Status"><span class="material-symbols-outlined text-[18px]">dns</span></button><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface relative" title="Critical Plant Alerts"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 bg-error"></span></button><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface" title="Telemetry Settings"><span class="material-symbols-outlined text-[18px]">tune</span></button></div><div class="h-6 w-px bg-surface-variant/50 hidden sm:block"></div><div class="flex items-center gap-space-sm pl-1"><div class="hidden xl:flex flex-col text-left"><span class="font-headline-sm text-[12px] text-on-surface font-semibold">أحمد محمود</span><span class="font-label-caps text-[9px] text-primary">Chief Mill Operator</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><aside class="fixed right-0 top-16 bottom-0 w-72 bg-surface-container-lowest z-40 border-l border-surface-variant/40 flex flex-col justify-between"><div class="py-space-md"><div class="px-space-lg mb-space-md"><span class="font-label-caps text-label-caps text-outline tracking-widest block">وحدات التشغيل والتحكم INDUSTRIAL GATES</span></div><nav class="space-y-0.5 px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="operational-cockpit" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">grid_view</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">نظرة عامة على صالة الإنتاج</span><span class="font-label-caps text-[9px] text-outline uppercase">Operational Cockpit</span></div></div><span class="font-label-numeric-sm text-[10px] text-tertiary">ONLINE</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="deckle-calculator" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">straighten</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">حاسبة تقطيع الرولات</span><span class="font-label-caps text-[9px] text-outline uppercase">Deckle Calculator</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">v4.2</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="roll-genealogy" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">account_tree</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">شجرة نسب الرول</span><span class="font-label-caps text-[9px] text-outline uppercase">Roll Genealogy</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">PARENT</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="qc-laboratory-gate" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">biotech</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">مختبر فحص الجودة</span><span class="font-label-caps text-[9px] text-outline uppercase">QC Laboratory Gate</span></div></div><span class="font-label-numeric-sm text-[10px] text-tertiary">ISO 187</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="thermal-label-printer" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">print</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">طباعة الباركود الحراري</span><span class="font-label-caps text-[9px] text-outline uppercase">Thermal Label Printer</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">ZEBRA</span></a><a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm transition-colors border-r-2 border-transparent bg-primary-container text-on-primary-container font-semibold" data-path="immutable-stock-ledger" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">history_edu</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">سجل حركات المخزن</span><span class="font-label-caps text-[9px] text-outline uppercase">Immutable Stock Ledger</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">AUDIT</span></a></nav></div><div class="p-space-md bg-surface-container-low border-t border-surface-variant/40"><div class="flex items-center justify-between font-label-numeric-sm text-label-numeric-sm text-on-surface-variant mb-1"><span>REEL STAND PM1 SPEED</span><span class="text-primary font-semibold">1,240 M/MIN</span></div><div class="w-full bg-surface h-1.5 overflow-hidden"><div class="bg-primary-container h-full w-[82%]"></div></div><div class="flex items-center justify-between mt-space-sm text-outline font-label-caps text-[9px]"><span>BASIS WT: 140 GSM</span><span>SLIT EFFICIENCY: 99.4%</span></div></div></aside><div class="pr-72"><main class="w-full min-h-screen pt-16 bg-surface-dim px-margin py-space-lg"><div class="flex flex-col w-full space-y-space-md">
+<!-- 1. Double-Entry Integrity Header & System Guarantee Banner -->
+<div class="flex flex-col gap-space-sm bg-surface-container-low p-space-lg shadow-sm">
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[24px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-md text-headline-md text-on-surface">سجل حركات المخزن المزدوج غير القابل للتعديل</h1>
+<span class="font-label-numeric-sm text-label-numeric-sm px-2 py-0.5 bg-surface-container-high text-tertiary uppercase">SHA-256 APPEND-ONLY LEDGER</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 max-w-4xl leading-relaxed">
+            دفتر أستاذ المخزن المزدوج غير القابل للتعديل (Append-Only Immutable Ledger) — جميع الحركات موثقة ببصمة رقمية SHA-256 مشفرة زمنياً، ولا توجد عدادات مخزون قابلة للتعديل اليدوي، إجمالي الأرصدة مستنتج رياضياً من حاصل الحركات ومحمي من التلاعب.
+          </p>
+</div>
+</div>
+<!-- Quick Hash Node Verification Status -->
+<div class="flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-space-sm self-start xl:self-auto">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-outline">NODE GENESIS INTEGRITY</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary">BLOCK #8,219,044 • 0 UNMATCHED ENTRIES</span>
+</div>
+</div>
+</div>
+<!-- Live Stock Totals Matrix -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-xs mt-space-sm">
+<div class="bg-surface-container p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase">إجمالي الرولات الجاهزة بالصالة</span>
+<span class="material-symbols-outlined text-primary text-[18px]">inventory_2</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-xs">
+<span class="font-label-numeric-lg text-label-numeric-lg text-on-surface">412</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">رول معتمد</span>
+</div>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary mt-1">100% موثقة بالقيود</span>
+</div>
+<div class="bg-surface-container p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase">الوزن الكلي المعتمد (صافي)</span>
+<span class="material-symbols-outlined text-primary text-[18px]">scale</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-xs">
+<span class="font-label-numeric-lg text-label-numeric-lg text-primary">498,320.00</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">كجم</span>
+</div>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline mt-1">حاصل جمع 412 رول نشط</span>
+</div>
+<div class="bg-surface-container p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase">المخزون المحجوز للشحن</span>
+<span class="material-symbols-outlined text-primary text-[18px]">local_shipping</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-xs">
+<span class="font-label-numeric-lg text-label-numeric-lg text-on-surface">85,200.00</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">كجم</span>
+</div>
+<span class="font-label-numeric-sm text-label-numeric-sm text-primary mt-1">68 رول • إذن تحميل Dock-2</span>
+</div>
+<div class="bg-surface-container p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase">المتاح للتسليم الفوري</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]">task_alt</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-xs">
+<span class="font-label-numeric-lg text-label-numeric-lg text-tertiary">413,120.00</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">كجم</span>
+</div>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline mt-1">جاهز للفواتير وإصدار الشهادات</span>
+</div>
+</div>
+</div>
+<!-- 2. Advanced Audit Filter Toolbar -->
+<div class="bg-surface-container-low p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-sm mb-space-sm bg-surface-container-lowest px-space-md py-space-xs">
+<div class="flex items-center gap-space-xs text-primary">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span>
+<span class="font-label-caps text-label-caps uppercase">فلترة دفاتر التدقيق الرقمية</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="font-label-numeric-sm text-label-numeric-sm text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1" id="reset-filters">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+          إعادة ضبط المعايير
+        </button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-space-sm">
+<!-- Movement Type Filter -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-outline" for="filter-mov-type">نوع الحركة MOVEMENT TYPE</label>
+<div class="relative">
+<select class="w-full h-9 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-space-sm appearance-none outline-none focus:bg-surface-container-high transition-colors" id="filter-mov-type">
+<option value="ALL">جميع الحركات (All Transactions)</option>
+<option value="PRODUCTION_RECEIPT">PRODUCTION_RECEIPT (استلام إنتاج)</option>
+<option value="STATUS_CHANGE">STATUS_CHANGE (تغيير اعتماد الجودة)</option>
+<option value="LOCATION_TRANSFER">LOCATION_TRANSFER (مناقلة مستودعية)</option>
+<option value="DISPATCH">DISPATCH (صرف وشحن عميل)</option>
+<option value="SCRAP">SCRAP (هالك وإعادة تدوير)</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute left-2 top-2 text-[18px] text-outline">expand_more</span>
+</div>
+</div>
+<!-- Paper Grade Filter -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-outline" for="filter-grade">صنف الورق PAPER GRADE</label>
+<div class="relative">
+<select class="w-full h-9 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-space-sm appearance-none outline-none focus:bg-surface-container-high transition-colors" id="filter-grade">
+<option value="ALL">جميع الأصناف (All Grades)</option>
+<option value="TESTLINER">Testliner • تيست لاينر فاخر</option>
+<option value="FLUTING">Fluting • ورق كرتون فلوتنج</option>
+<option value="KRAFT">Kraft • كرافت توب لاينر</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute left-2 top-2 text-[18px] text-outline">expand_more</span>
+</div>
+</div>
+<!-- Quality Status Filter -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-outline" for="filter-qc">حالة الجودة QUALITY STATUS</label>
+<div class="relative">
+<select class="w-full h-9 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-space-sm appearance-none outline-none focus:bg-surface-container-high transition-colors" id="filter-qc">
+<option value="ALL">جميع الحالات المعملية</option>
+<option value="RELEASED">RELEASED (معتمد للتسليم)</option>
+<option value="QUARANTINE">QUARANTINE (تحت الفحص)</option>
+<option value="REJECTED">REJECTED (مرفوض معملياً)</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute left-2 top-2 text-[18px] text-outline">expand_more</span>
+</div>
+</div>
+<!-- Warehouse Storage Location -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-outline" for="filter-location">المستودع / الموقع STORAGE YARD</label>
+<div class="relative">
+<select class="w-full h-9 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-space-sm appearance-none outline-none focus:bg-surface-container-high transition-colors" id="filter-location">
+<option value="ALL">كافة المستودعات والصالات</option>
+<option value="BAY_B04">Bay B-04 • رصيف رولات التام</option>
+<option value="FG_YARD">Finished Goods Yard • ساحة الشحن</option>
+<option value="RAW_BUFFER">Raw Reel Buffer • تخزين الجامبو</option>
+<option value="LAB_1">QC Lab-1 • منطقة عينات الاختبار</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute left-2 top-2 text-[18px] text-outline">expand_more</span>
+</div>
+</div>
+<!-- Date & Operator Scope -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-outline">نطاق التدقيق • تاريخ اليوم</label>
+<div class="flex items-center h-9 bg-surface-container-lowest px-space-sm justify-between">
+<span class="font-label-numeric-sm text-label-numeric-sm text-primary">2026-03-29 (الوردية الحالية)</span>
+<span class="material-symbols-outlined text-outline text-[16px]">calendar_today</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Tabular Immutable Ledger Data Grid -->
+<div class="bg-surface-container-low shadow-sm flex flex-col overflow-hidden">
+<!-- Header of the Table Container -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-space-md bg-surface-container gap-space-sm">
+<div class="flex items-center gap-space-md">
+<span class="font-headline-sm text-headline-sm text-on-surface">سجل قيود الحركات الموثقة برمجياً</span>
+<span class="font-label-numeric-sm text-label-numeric-sm px-2 py-0.5 bg-surface-container-high text-on-surface-variant">5 قيود معروضة من أصل 8,940</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="h-8 px-space-md bg-surface-container-high hover:bg-surface-bright text-on-surface text-body-sm font-body-sm flex items-center gap-space-xs transition-colors" title="Export CSV Hash Proof">
+<span class="material-symbols-outlined text-[16px] text-primary">download</span>
+<span>تصدير تقرير التدقيق الموثق (CSV)</span>
+</button>
+<button class="h-8 px-space-md bg-primary-container text-on-primary-container text-body-sm font-semibold flex items-center gap-space-xs hover:opacity-95 transition-opacity" title="Trigger cryptographic ledger check">
+<span class="material-symbols-outlined text-[16px]">fingerprint</span>
+<span>فحص توافق السلسلة الرقمية</span>
+</button>
+</div>
+</div>
+<!-- Table Wrapper with RTL Horizontal Scroll Support -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest text-outline font-label-caps text-label-caps tracking-wider h-10 select-none">
+<th class="px-space-md py-2 whitespace-nowrap text-right">التوقيت الدقيق</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">كود الحركة</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">كود الرول المتأثر</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">تصنيف الرول</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">نوع المعاملة المزدوجة</th>
+<th class="px-space-md py-2 whitespace-nowrap text-left font-label-numeric-sm">الوزن الصافي (كجم)</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">من موقع (CREDIT)</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">إلى موقع (DEBIT)</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">المسئول المعتمد</th>
+<th class="px-space-md py-2 whitespace-nowrap text-right">بصمة SHA-256</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
+<!-- Row 1: DISPATCH -->
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">
+              21:15:04.120
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-md text-label-numeric-md text-primary">
+              MOV-2026-9041
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="font-label-numeric-md text-label-numeric-md text-on-surface">SLT-02-JMB-2026-088</span>
+<span class="block font-label-caps text-[9px] text-outline">TESTLINER • 140 GSM • 1400 MM</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[11px] font-medium">رول فرعي مشذب</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-1 bg-surface-container-high text-primary font-label-numeric-sm text-[11px] font-semibold tracking-wide">
+                DISPATCH (صرف شحن)
+              </span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap text-left font-label-numeric-md text-label-numeric-md text-primary font-semibold">
+              1,250.00
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-outline">warehouse</span>
+<span>رصيف الشحن Dock-2</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+<span>شاحنة العميل #4829</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="text-on-surface font-medium">كمال إبراهيم</span>
+<span class="block font-label-caps text-[9px] text-outline">أمين المستودع الرئيسي</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-space-xs font-label-numeric-sm text-label-numeric-sm text-outline group-hover:text-tertiary transition-colors">
+<button class="copy-hash-btn p-1 hover:bg-surface-container-highest transition-colors text-on-surface-variant hover:text-on-surface" data-hash="4a8be8309dfca8101a8f93e25b12a52efc187740e21a28a1c9003c21a47871c2" title="Copy full SHA-256 hash">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+<span>4a8b...71c2</span>
+</div>
+</td>
+</tr>
+<!-- Row 2: STATUS_CHANGE -->
+<tr class="bg-surface-container-lowest/60 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">
+              20:15:22.845
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-md text-label-numeric-md text-primary">
+              MOV-2026-9040
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="font-label-numeric-md text-label-numeric-md text-on-surface">SLT-02-JMB-2026-088</span>
+<span class="block font-label-caps text-[9px] text-outline">TESTLINER • 140 GSM • 1400 MM</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[11px] font-medium">رول فرعي مشذب</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-1 bg-surface-container-high text-tertiary font-label-numeric-sm text-[11px] font-semibold tracking-wide">
+                STATUS_CHANGE (RELEASED)
+              </span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap text-left font-label-numeric-md text-label-numeric-md text-on-surface">
+              1,250.00
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">biotech</span>
+<span>مختبر الجودة Lab-1</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-tertiary font-medium">
+<span class="material-symbols-outlined text-[14px]">grid_goldenratio</span>
+<span>Bay B-04 (رصيد جاهز)</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="text-on-surface font-medium">د. سامح فؤاد</span>
+<span class="block font-label-caps text-[9px] text-outline">مدير ضبط الجودة والمعامل</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-space-xs font-label-numeric-sm text-label-numeric-sm text-outline group-hover:text-tertiary transition-colors">
+<button class="copy-hash-btn p-1 hover:bg-surface-container-highest transition-colors text-on-surface-variant hover:text-on-surface" data-hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" title="Copy full SHA-256 hash">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+<span>e3b0...b855</span>
+</div>
+</td>
+</tr>
+<!-- Row 3: PRODUCTION_RECEIPT (Slitter to Cooling) -->
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">
+              19:22:15.510
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-md text-label-numeric-md text-primary">
+              MOV-2026-9039
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="font-label-numeric-md text-label-numeric-md text-on-surface">SLT-02-JMB-2026-088</span>
+<span class="block font-label-caps text-[9px] text-outline">TESTLINER • 140 GSM • 1400 MM</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[11px] font-medium">رول فرعي مشذب</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface font-label-numeric-sm text-[11px] font-semibold tracking-wide">
+                PRODUCTION_RECEIPT (استلام)
+              </span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap text-left font-label-numeric-md text-label-numeric-md text-on-surface">
+              1,250.00
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">precision_manufacturing</span>
+<span>مقص Slitter #1</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-outline">ac_unit</span>
+<span>منطقة الاستلام والتبريد</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="text-on-surface font-medium">أحمد محمود</span>
+<span class="block font-label-caps text-[9px] text-outline">مشغل مقصات ومطابقة</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-space-xs font-label-numeric-sm text-label-numeric-sm text-outline group-hover:text-tertiary transition-colors">
+<button class="copy-hash-btn p-1 hover:bg-surface-container-highest transition-colors text-on-surface-variant hover:text-on-surface" data-hash="8f12635a90184c781192e591bcdd1240182813158e0a7241289410427848390a" title="Copy full SHA-256 hash">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+<span>8f12...390a</span>
+</div>
+</td>
+</tr>
+<!-- Row 4: SCRAP (Side Trim to Pulper) -->
+<tr class="bg-surface-container-lowest/60 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">
+              19:22:15.510
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-md text-label-numeric-md text-primary">
+              MOV-2026-9038
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="font-label-numeric-md text-label-numeric-md text-error">SCRAP-TRIM-088</span>
+<span class="block font-label-caps text-[9px] text-outline">WASTE • EDGE CUT OFF</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 bg-error-container/30 text-error text-[11px] font-medium">هالك أطراف التشذيب</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-1 bg-error-container/30 text-error font-label-numeric-sm text-[11px] font-semibold tracking-wide">
+                SCRAP (هالك للعجانة)
+              </span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap text-left font-label-numeric-md text-label-numeric-md text-error font-semibold">
+              62.50
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">cut</span>
+<span>مقص Slitter #1</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-error">
+<span class="material-symbols-outlined text-[14px]">recycling</span>
+<span>حوض العجانة Pulper-01</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="text-on-surface font-medium">أحمد محمود</span>
+<span class="block font-label-caps text-[9px] text-outline">مشغل مقصات ومطابقة</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-space-xs font-label-numeric-sm text-label-numeric-sm text-outline group-hover:text-tertiary transition-colors">
+<button class="copy-hash-btn p-1 hover:bg-surface-container-highest transition-colors text-on-surface-variant hover:text-on-surface" data-hash="9c11822819001b87a9117628100ac00122e11894a77328901a182390119188ab" title="Copy full SHA-256 hash">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+<span>9c11...88ab</span>
+</div>
+</td>
+</tr>
+<!-- Row 5: PRODUCTION_RECEIPT (Jumbo Reel on PM1) -->
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">
+              18:42:10.020
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap font-label-numeric-md text-label-numeric-md text-primary">
+              MOV-2026-9037
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="font-label-numeric-md text-label-numeric-md text-on-surface">JMB-2026-088</span>
+<span class="block font-label-caps text-[9px] text-outline">KRAFT LINER • POPE REEL</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-0.5 bg-primary-container text-on-primary-container text-[11px] font-medium">بكرة جامبو بوب</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="px-2 py-1 bg-surface-container-high text-tertiary font-label-numeric-sm text-[11px] font-semibold tracking-wide">
+                PRODUCTION_RECEIPT (بوب PM1)
+              </span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap text-left font-label-numeric-md text-label-numeric-md text-primary font-bold">
+              3,000.00
+            </td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">factory</span>
+<span>خط الإنتاج PM1</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-outline">forklift</span>
+<span>ونش التخزين المؤقت</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<span class="text-on-surface font-medium">أحمد محمود</span>
+<span class="block font-label-caps text-[9px] text-outline">كبير مشغلي صالة الإنتاج</span>
+</td>
+<td class="px-space-md py-space-sm whitespace-nowrap">
+<div class="flex items-center gap-space-xs font-label-numeric-sm text-label-numeric-sm text-outline group-hover:text-tertiary transition-colors">
+<button class="copy-hash-btn p-1 hover:bg-surface-container-highest transition-colors text-on-surface-variant hover:text-on-surface" data-hash="1a4592a83b271649ab1844990172e81792618933b91a7837012984620021ff09" title="Copy full SHA-256 hash">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+<span>1a45...ff09</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Data Grid Footer / Pagination & Monospace Integrity Check -->
+<div class="flex flex-col sm:flex-row items-center justify-between p-space-sm bg-surface-container-lowest text-outline font-label-caps text-label-caps">
+<div class="flex items-center gap-space-md">
+<span>TOTAL RECORDED ENTRIES: 8,940</span>
+<span class="h-3 w-px bg-surface-variant"></span>
+<span class="text-tertiary">MERKLE TREE ROOT: c42f...91ae</span>
+</div>
+<div class="flex items-center gap-space-xs mt-2 sm:mt-0 font-label-numeric-sm text-label-numeric-sm">
+<button class="px-2 py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">&lt;&lt; الأولى</button>
+<button class="px-2 py-1 bg-primary text-on-primary font-bold">1</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">2</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">3</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">التالية &gt;&gt;</button>
+</div>
+</div>
+</div>
+<!-- 4. Warehouse Stacking Mini-Map & Live Reconciliation Verification -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Mini Map & Bay Stack Locator (8 cols) -->
+<div class="lg:col-span-8 bg-surface-container-low p-space-md shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm pb-space-xs bg-surface-container-lowest px-space-md py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">layers</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">خريطة رص وتخزين الرولات ثلاثية الأبعاد (Bay Stacking Vector)</span>
+</div>
+<span class="font-label-numeric-sm text-label-numeric-sm px-2 py-0.5 bg-surface-container text-primary">
+            محدد حالياً: BAY B-04 • ROW 02 • LEVEL 3
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+          عرض تمثيلي مباشر لخلايا التخزين الرأسي في صالة التام. يتم ربط كل معاملة مخزنية بالإحداثي المكاني الدقيق لضمان انعدام الفروق الجردية.
+        </p>
+<!-- Stacking Matrix Visualizer -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-sm bg-surface-container-lowest p-space-md">
+<!-- Bay A-01 -->
+<div class="flex flex-col gap-1 bg-surface-container p-space-sm">
+<div class="flex items-center justify-between font-label-caps text-[9px] text-outline">
+<span>BAY A-01 (KRAFT)</span>
+<span>12/12 رول</span>
+</div>
+<div class="grid grid-rows-3 gap-1 h-28 bg-surface-container-low p-1">
+<div class="bg-surface-variant/40 flex items-center justify-center font-label-numeric-sm text-[9px] text-outline">LVL 3: 1,200kg</div>
+<div class="bg-surface-variant/40 flex items-center justify-center font-label-numeric-sm text-[9px] text-outline">LVL 2: 1,200kg</div>
+<div class="bg-surface-variant/40 flex items-center justify-center font-label-numeric-sm text-[9px] text-outline">LVL 1: 1,200kg</div>
+</div>
+<span class="font-label-numeric-sm text-[9px] text-outline text-center">مشغول بالكامل</span>
+</div>
+<!-- Bay B-04 (Active with highlighted Roll) -->
+<div class="flex flex-col gap-1 bg-surface-container p-space-sm ring-1 ring-primary/40 relative">
+<div class="absolute -top-2 right-2 bg-primary px-1.5 py-0.2 font-label-caps text-[8px] text-on-primary font-bold">
+              موقع الرول المحدد
+            </div>
+<div class="flex items-center justify-between font-label-caps text-[9px] text-primary">
+<span>BAY B-04 (TESTLINER)</span>
+<span>9/12 رول</span>
+</div>
+<div class="grid grid-rows-3 gap-1 h-28 bg-surface-container-low p-1">
+<!-- Selected Roll in Level 3 -->
+<div class="bg-primary/20 flex flex-col items-center justify-center text-primary font-label-numeric-sm text-[9px] p-0.5">
+<span class="font-bold">SLT-02-JMB-088</span>
+<span class="text-[8px] text-on-surface">1,250.00 kg • LVL 3</span>
+</div>
+<div class="bg-surface-container-high flex items-center justify-center font-label-numeric-sm text-[9px] text-on-surface-variant">LVL 2: 1,250kg</div>
+<div class="bg-surface-container-high flex items-center justify-center font-label-numeric-sm text-[9px] text-on-surface-variant">LVL 1: 1,250kg</div>
+</div>
+<span class="font-label-numeric-sm text-[9px] text-tertiary text-center">معتمد • متاح للتسليم</span>
+</div>
+<!-- Bay C-02 -->
+<div class="flex flex-col gap-1 bg-surface-container p-space-sm">
+<div class="flex items-center justify-between font-label-caps text-[9px] text-outline">
+<span>BAY C-02 (FLUTING)</span>
+<span>6/12 رول</span>
+</div>
+<div class="grid grid-rows-3 gap-1 h-28 bg-surface-container-low p-1">
+<div class="bg-surface-container-lowest flex items-center justify-center font-label-numeric-sm text-[8px] text-outline">فارغ EMPTY</div>
+<div class="bg-surface-variant/40 flex items-center justify-center font-label-numeric-sm text-[9px] text-outline">LVL 2: 1,150kg</div>
+<div class="bg-surface-variant/40 flex items-center justify-center font-label-numeric-sm text-[9px] text-outline">LVL 1: 1,150kg</div>
+</div>
+<span class="font-label-numeric-sm text-[9px] text-outline text-center">سعة استيعاب 50%</span>
+</div>
+<!-- Bay D-01 (Quarantine Area) -->
+<div class="flex flex-col gap-1 bg-surface-container p-space-sm">
+<div class="flex items-center justify-between font-label-caps text-[9px] text-outline">
+<span>BAY D-01 (REJECT/HOLD)</span>
+<span>2/12 رول</span>
+</div>
+<div class="grid grid-rows-3 gap-1 h-28 bg-surface-container-low p-1">
+<div class="bg-surface-container-lowest flex items-center justify-center font-label-numeric-sm text-[8px] text-outline">فارغ EMPTY</div>
+<div class="bg-surface-container-lowest flex items-center justify-center font-label-numeric-sm text-[8px] text-outline">فارغ EMPTY</div>
+<div class="bg-surface-container-high flex items-center justify-center font-label-numeric-sm text-[9px] text-outline">LVL 1: 850kg</div>
+</div>
+<span class="font-label-numeric-sm text-[9px] text-outline text-center">منطقة الحجز والفحص</span>
+</div>
+</div>
+</div>
+<!-- Real-time locator status caption -->
+<div class="flex items-center justify-between text-outline font-label-caps text-[9px] mt-space-sm pt-space-xs bg-surface-container-lowest px-space-sm">
+<span>YARD SENSOR NETWORK: ONLINE (48/48 RFID READERS)</span>
+<span>LAST PULSE: 2026-03-29 21:15:05</span>
+</div>
+</div>
+<!-- Live Ledger Reconciliation Verification Box (4 cols) -->
+<div class="lg:col-span-4 bg-surface-container-low p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center gap-space-xs text-tertiary">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">المطابقة الرياضية الآنية</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          نظام التحقق الآلي من توازن القيود المزدوجة (Double-Entry Zero-Discrepancy Proof).
+        </p>
+<!-- Reconciliation Graphic Card -->
+<div class="bg-surface-container-lowest p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline">نسبة تطابق الجرد الفعلي مع الدفتر</span>
+<span class="font-label-numeric-md text-label-numeric-md text-tertiary font-bold">100.00%</span>
+</div>
+<div class="w-full bg-surface-container h-2 overflow-hidden">
+<div class="bg-tertiary h-full w-full"></div>
+</div>
+<div class="space-y-1 mt-space-xs font-label-numeric-sm text-label-numeric-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>إجمالي الحركات المدينة (Debits):</span>
+<span class="text-on-surface font-semibold">498,320.00 kg</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>إجمالي الحركات الدائنة (Credits):</span>
+<span class="text-on-surface font-semibold">498,320.00 kg</span>
+</div>
+<div class="flex justify-between text-tertiary pt-1">
+<span>صافي الفارق المعلق (Variance):</span>
+<span class="font-bold">0.000 kg</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container p-space-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">lock_clock</span>
+<p class="font-body-sm text-[11px] text-on-surface-variant leading-tight">
+            لا يمكن للمستخدمين أو المسؤولين تعديل كميات الأصناف مباشرة. أي تعديل في المخزون يتطلب إنشاء حركة معاكسة موجبة وسالبة موثقة برقم إذن ومسؤول معتمد.
+          </p>
+</div>
+</div>
+<!-- Action Button -->
+<div class="mt-space-md">
+<button class="w-full h-9 bg-surface-container-high hover:bg-surface-bright text-on-surface text-body-sm font-semibold flex items-center justify-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] text-primary">history</span>
+<span>طباعة تقرير المطابقة المحاسبية للوردية</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro-Interactions JavaScript -->
+<script>
+  // Hash Copy Interactivity
+  document.querySelectorAll('.copy-hash-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const hash = this.getAttribute('data-hash');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(hash).then(() => {
+          const icon = this.querySelector('.material-symbols-outlined');
+          const originalText = icon.textContent;
+          icon.textContent = 'check';
+          icon.classList.add('text-tertiary');
+          setTimeout(() => {
+            icon.textContent = originalText;
+            icon.classList.remove('text-tertiary');
+          }, 1500);
+        });
+      }
+    });
+  });
+
+  // Reset Filters Interactivity
+  const resetBtn = document.getElementById('reset-filters');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      document.getElementById('filter-mov-type').value = 'ALL';
+      document.getElementById('filter-grade').value = 'ALL';
+      document.getElementById('filter-qc').value = 'ALL';
+      document.getElementById('filter-location').value = 'ALL';
+    });
+  }
+</script></main></div></body></html>

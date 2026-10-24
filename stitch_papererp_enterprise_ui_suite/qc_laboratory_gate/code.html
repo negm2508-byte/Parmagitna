@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary-fixed":"#2a1700","surface-container-low":"#191b23","on-tertiary-fixed-variant":"#005236","on-secondary-container":"#b0b8cf","surface-container":"#1d1f27","on-tertiary-fixed":"#002113","surface-container-high":"#272a32","error":"#ffb4ab","surface-variant":"#32353d","primary-container":"#c88a35","tertiary-fixed-dim":"#4edea3","tertiary":"#4edea3","on-tertiary-container":"#003723","surface-bright":"#363941","secondary-fixed-dim":"#bec6de","primary-fixed":"#ffddb7","inverse-primary":"#855400","primary":"#feb95f","outline":"#9e8e7e","on-secondary-fixed-variant":"#3f475a","primary-fixed-dim":"#feb95f","surface-container-highest":"#32353d","surface-container-lowest":"#0b0e15","outline-variant":"#514537","on-primary":"#472a00","tertiary-fixed":"#6ffbbe","on-surface":"#e1e2ec","surface-tint":"#feb95f","secondary-container":"#41495c","on-primary-container":"#452900","on-secondary":"#283043","on-tertiary":"#003824","on-error-container":"#ffdad6","background":"#10131a","on-error":"#690005","on-background":"#e1e2ec","on-primary-fixed-variant":"#653e00","on-surface-variant":"#d6c3b2","secondary-fixed":"#dae2fb","surface-dim":"#10131a","error-container":"#93000a","secondary":"#bec6de","on-secondary-fixed":"#131b2d","tertiary-container":"#00ac77","surface":"#10131a","inverse-on-surface":"#2d3038","inverse-surface":"#e1e2ec"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"gutter":"1rem","margin":"1.5rem","gutter-expanded":"1.5rem","space-md":"0.75rem","space-xl":"2rem","space-xs":"0.25rem","margin-mobile":"0.75rem","space-lg":"1.25rem","space-sm":"0.5rem","gutter-compact":"0.5rem"},fontFamily:{"headline-lg-mobile":["IBM Plex Sans"],"display-hero-mobile":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"label-numeric-lg":["JetBrains Mono"],"label-numeric-sm":["JetBrains Mono"],"body-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"headline-sm":["IBM Plex Sans"],"label-numeric-md":["JetBrains Mono"],"display-hero":["IBM Plex Sans"],"body-lg":["IBM Plex Sans"],"label-caps":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"]},fontSize:{"headline-lg-mobile":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-hero-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-sm":["11px",{"lineHeight":"16px","fontWeight":"400"}],"label-numeric-lg":["18px",{"lineHeight":"24px","letterSpacing":"0.02em","fontWeight":"600"}],"label-numeric-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.03em","fontWeight":"500"}],"body-md":["13px",{"lineHeight":"20px","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","fontWeight":"600"}],"label-numeric-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"500"}],"display-hero":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-lg":["15px",{"lineHeight":"24px","fontWeight":"400"}],"label-caps":["10px",{"lineHeight":"14px","letterSpacing":"0.08em","fontWeight":"600"}],"headline-md":["20px",{"lineHeight":"28px","fontWeight":"500"}]}}}};</script></head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 left-0 right-0 h-16 z-50 bg-surface-container-lowest/95 backdrop-blur-md flex items-center justify-between px-margin border-b border-surface-variant/40"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-md"><div class="w-9 h-9 bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container text-[20px]">precision_manufacturing</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">PaperERP Enterprise</span><span class="font-label-caps text-label-caps text-on-surface-variant">مصنع مصر للورق والكرتون • وحدة التحكم الرئيسية PM1</span></div></div><div class="h-6 w-px bg-surface-variant/50 hidden md:block"></div><div class="hidden lg:flex items-center gap-space-md font-label-numeric-sm text-label-numeric-sm"><div class="flex items-center gap-space-xs px-2 py-1 bg-surface-container-low border border-surface-variant/60"><span class="w-1.5 h-1.5 bg-tertiary"></span><span class="text-tertiary">LAN 192.168.9.223</span><span class="text-on-surface-variant">(متصل - صالة الإنتاج PM1)</span></div><div class="flex items-center gap-space-xs px-2 py-1 bg-surface-container-low border border-surface-variant/60"><span class="material-symbols-outlined text-primary text-[14px]">schedule</span><span class="text-on-surface">وردية المساء • خط PM1</span></div></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex flex-col items-end px-3 py-1 bg-surface-container-low border border-surface-variant/40"><span class="font-label-numeric-md text-label-numeric-md text-primary tracking-wider" id="live-mill-clock">14:48:22.840</span><span class="font-label-caps text-label-caps text-on-surface-variant">UTC+02:00 CAIRO MILL TIME</span></div><div class="flex items-center gap-space-xs"><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface" title="System Status"><span class="material-symbols-outlined text-[18px]">dns</span></button><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface relative" title="Critical Plant Alerts"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 bg-error"></span></button><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface" title="Telemetry Settings"><span class="material-symbols-outlined text-[18px]">tune</span></button></div><div class="h-6 w-px bg-surface-variant/50 hidden sm:block"></div><div class="flex items-center gap-space-sm pl-1"><div class="hidden xl:flex flex-col text-left"><span class="font-headline-sm text-[12px] text-on-surface font-semibold">أحمد محمود</span><span class="font-label-caps text-[9px] text-primary">Chief Mill Operator</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><aside class="fixed right-0 top-16 bottom-0 w-72 bg-surface-container-lowest z-40 border-l border-surface-variant/40 flex flex-col justify-between"><div class="py-space-md"><div class="px-space-lg mb-space-md"><span class="font-label-caps text-label-caps text-outline tracking-widest block">وحدات التشغيل والتحكم INDUSTRIAL GATES</span></div><nav class="space-y-0.5 px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="operational-cockpit" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">grid_view</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">نظرة عامة على صالة الإنتاج</span><span class="font-label-caps text-[9px] text-outline uppercase">Operational Cockpit</span></div></div><span class="font-label-numeric-sm text-[10px] text-tertiary">ONLINE</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="deckle-calculator" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">straighten</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">حاسبة تقطيع الرولات</span><span class="font-label-caps text-[9px] text-outline uppercase">Deckle Calculator</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">v4.2</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="roll-genealogy" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">account_tree</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">شجرة نسب الرول</span><span class="font-label-caps text-[9px] text-outline uppercase">Roll Genealogy</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">PARENT</span></a><a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm transition-colors border-r-2 border-transparent bg-primary-container text-on-primary-container font-semibold" data-path="qc-laboratory-gate" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">biotech</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">مختبر فحص الجودة</span><span class="font-label-caps text-[9px] text-outline uppercase">QC Laboratory Gate</span></div></div><span class="font-label-numeric-sm text-[10px] text-tertiary">ISO 187</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="thermal-label-printer" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">print</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">طباعة الباركود الحراري</span><span class="font-label-caps text-[9px] text-outline uppercase">Thermal Label Printer</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">ZEBRA</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="immutable-stock-ledger" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">history_edu</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">سجل حركات المخزن</span><span class="font-label-caps text-[9px] text-outline uppercase">Immutable Stock Ledger</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">AUDIT</span></a></nav></div><div class="p-space-md bg-surface-container-low border-t border-surface-variant/40"><div class="flex items-center justify-between font-label-numeric-sm text-label-numeric-sm text-on-surface-variant mb-1"><span>REEL STAND PM1 SPEED</span><span class="text-primary font-semibold">1,240 M/MIN</span></div><div class="w-full bg-surface h-1.5 overflow-hidden"><div class="bg-primary-container h-full w-[82%]"></div></div><div class="flex items-center justify-between mt-space-sm text-outline font-label-caps text-[9px]"><span>BASIS WT: 140 GSM</span><span>SLIT EFFICIENCY: 99.4%</span></div></div></aside><div class="pr-72"><main class="w-full min-h-screen pt-16 bg-surface-dim px-margin py-space-lg"><div class="flex flex-col w-full">
+<!-- Precision Technical Ribbon -->
+<div class="w-full bg-surface-container-lowest px-margin py-space-sm mb-space-md shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-space-sm text-outline font-label-caps text-label-caps">
+<div class="flex items-center gap-space-md">
+<span class="inline-flex items-center gap-1.5 text-tertiary">
+<span class="w-2 h-2 bg-tertiary"></span>
+          ISO 187 / TAPPI T402 OM-21 CALIBRATED CHAMBER
+        </span>
+<span class="text-surface-variant font-bold">/</span>
+<span class="text-on-surface-variant font-label-numeric-sm text-label-numeric-sm">TEMP: 23.0°C ± 1.0°C</span>
+<span class="text-surface-variant font-bold">/</span>
+<span class="text-on-surface-variant font-label-numeric-sm text-label-numeric-sm">RH: 50.0% ± 2.0%</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-numeric-sm text-label-numeric-sm text-primary">BATCH QC RUN: #QC-8842-PM1</span>
+<span class="text-surface-variant font-bold">/</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">محطة الفحص الميكانيكي والرطوبي • البوابة رقم 4</span>
+</div>
+</div>
+</div>
+<!-- Section 1: Inspected Roll Spec Header & Heavyweight Spec Matrix -->
+<div class="w-full bg-surface-container-low p-space-lg mb-space-lg shadow-md relative overflow-hidden">
+<div class="absolute -left-12 -top-12 w-64 h-64 bg-primary/5 rounded-full pointer-events-none blur-3xl"></div>
+<div class="flex flex-col lg:flex-row lg:items-stretch justify-between gap-space-lg relative z-10">
+<!-- Primary Roll Identity -->
+<div class="flex flex-col justify-between space-y-space-md flex-1">
+<div>
+<div class="flex items-center gap-space-sm mb-space-xs">
+<span class="px-2 py-0.5 bg-primary/10 text-primary font-label-caps text-label-caps">INSPECTION TARGET REEL</span>
+<span class="text-surface-variant font-bold">/</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">LOT TIMESTAMP: 2026-03-30 14:15 EET</span>
+</div>
+<div class="flex items-baseline gap-space-md flex-wrap">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">
+              SLT-02-JMB-2026-088
+            </h1>
+<span class="font-label-numeric-md text-label-numeric-md text-primary bg-surface-container px-space-sm py-1">
+              *SLT02JMB2026088*
+            </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            صنف الورق: <strong class="text-on-surface font-semibold">Testliner Grade-A (تست لاينر صنف ممتاز)</strong> • مشتق من الرول الجامبو الأم: <span class="font-label-numeric-md text-label-numeric-md text-outline">JMB-2026-088</span>
+</p>
+</div>
+<!-- Inline Tolerance Vector Spark -->
+<div class="bg-surface-container-lowest p-space-md">
+<div class="flex items-center justify-between text-outline font-label-caps text-label-caps mb-1.5">
+<span>نطاق المطابقة الباليستية لمعايرة الجراماج المستهدف (GSM TOLERANCE CORRIDOR)</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary">149.80 / 150.00 GSM (-0.13%)</span>
+</div>
+<div class="w-full bg-surface-container h-2 relative">
+<div class="absolute top-0 bottom-0 left-[25%] right-[25%] bg-primary/20"></div>
+<div class="absolute top-0 bottom-0 left-[48.5%] w-1.5 bg-tertiary"></div>
+<div class="absolute -top-1 left-[50%] w-0.5 h-4 bg-outline"></div>
+</div>
+<div class="flex justify-between items-center font-label-numeric-sm text-label-numeric-sm text-outline mt-1.5">
+<span>146.00 GSM (MIN)</span>
+<span class="text-primary">150.00 GSM (TARGET)</span>
+<span>154.00 GSM (MAX)</span>
+</div>
+</div>
+</div>
+<!-- Quick Scientific Target Reference Table -->
+<div class="lg:w-96 bg-surface-container-lowest p-space-md flex flex-col justify-between">
+<div>
+<span class="font-label-caps text-label-caps text-outline block mb-space-sm">المحددات الهندسية الإلزامية للمعيار (SPEC BOUNDARIES)</span>
+<div class="space-y-space-xs font-label-numeric-sm text-label-numeric-sm">
+<div class="flex justify-between items-center py-1 bg-surface-container-low px-2">
+<span class="text-on-surface-variant font-body-sm text-body-sm">الجراماج الاسمي المستهدف</span>
+<span class="text-on-surface font-semibold">150.00 ± 4.00 g/m²</span>
+</div>
+<div class="flex justify-between items-center py-1 bg-surface-container-low px-2">
+<span class="text-on-surface-variant font-body-sm text-body-sm">الرطوبة المعيارية المسموحة</span>
+<span class="text-on-surface font-semibold">6.00% – 8.50%</span>
+</div>
+<div class="flex justify-between items-center py-1 bg-surface-container-low px-2">
+<span class="text-on-surface-variant font-body-sm text-body-sm">معامل الانفجار الأدنى (Burst)</span>
+<span class="text-on-surface font-semibold">≥ 22.00 Factor</span>
+</div>
+<div class="flex justify-between items-center py-1 bg-surface-container-low px-2">
+<span class="text-on-surface-variant font-body-sm text-body-sm">ضغط مولن الهيدروليكي</span>
+<span class="text-on-surface font-semibold">≥ 350.00 kPa</span>
+</div>
+<div class="flex justify-between items-center py-1 bg-surface-container-low px-2">
+<span class="text-on-surface-variant font-body-sm text-body-sm">أقصى امتصاص ماء Cobb 60</span>
+<span class="text-on-surface font-semibold">≤ 45.00 g/m²</span>
+</div>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-outline font-label-caps text-label-caps">
+<span>STANDARD: TAPPI T410 / ISO 536</span>
+<span class="text-tertiary">STATION CAL: ACTIVE</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Scientific Lab Test Instruments Inputs (High density numeric cards) -->
+<div class="mb-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">science</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">قراءات أجهزة القياس والمعايرة المعملية الفورية</h2>
+</div>
+<span class="font-label-caps text-label-caps text-outline">TELEMETRY: DIRECT PROBE BUS RS-485</span>
+</div>
+<!-- 5-Card High Density Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-space-sm">
+<!-- Card 1: Tested GSM -->
+<div class="bg-surface-container-low p-space-md flex flex-col justify-between shadow-sm hover:bg-surface-container transition-colors">
+<div>
+<div class="flex items-center justify-between text-outline font-label-caps text-label-caps mb-space-xs">
+<span>ميزان الحساسية الدقيق</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary font-bold">INST #M01</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block font-medium">الوزن النوعي والجراماج الفعلي</span>
+<div class="my-space-sm flex items-baseline gap-1">
+<span class="font-label-numeric-lg text-[28px] leading-none text-on-surface font-semibold">149.80</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">g/m²</span>
+</div>
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>انحراف المعيار:</span>
+<span class="text-tertiary">-0.20 g/m²</span>
+</div>
+<div class="flex justify-between text-outline">
+<span>النطاق الهندسي:</span>
+<span>146.00 – 154.00</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs bg-surface-container-lowest p-1.5 flex items-center justify-between">
+<span class="px-1.5 py-0.5 bg-tertiary/20 text-tertiary font-label-caps text-label-caps font-semibold">IN SPEC</span>
+<span class="font-body-sm text-body-sm text-tertiary truncate">ضمن النطاق المسموح</span>
+</div>
+</div>
+<!-- Card 2: Moisture Content -->
+<div class="bg-surface-container-low p-space-md flex flex-col justify-between shadow-sm hover:bg-surface-container transition-colors">
+<div>
+<div class="flex items-center justify-between text-outline font-label-caps text-label-caps mb-space-xs">
+<span>محلل الرطوبة بالأشعة</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary font-bold">INST #IR04</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block font-medium">نسبة الرطوبة المئوية</span>
+<div class="my-space-sm flex items-baseline gap-1">
+<span class="font-label-numeric-lg text-[28px] leading-none text-on-surface font-semibold">7.20</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">% RH</span>
+</div>
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>المعيار المستهدف:</span>
+<span class="text-on-surface">7.00%</span>
+</div>
+<div class="flex justify-between text-outline">
+<span>النطاق الهندسي:</span>
+<span>6.00% – 8.50%</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs bg-surface-container-lowest p-1.5 flex items-center justify-between">
+<span class="px-1.5 py-0.5 bg-tertiary/20 text-tertiary font-label-caps text-label-caps font-semibold">OPTIMAL</span>
+<span class="font-body-sm text-body-sm text-tertiary truncate">ممتازة ومتجانسة</span>
+</div>
+</div>
+<!-- Card 3: Caliper Thickness -->
+<div class="bg-surface-container-low p-space-md flex flex-col justify-between shadow-sm hover:bg-surface-container transition-colors">
+<div>
+<div class="flex items-center justify-between text-outline font-label-caps text-label-caps mb-space-xs">
+<span>ميكروميتر القياس الآلي</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary font-bold">INST #TH09</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block font-medium">سمك الورق بالميكرون</span>
+<div class="my-space-sm flex items-baseline gap-1">
+<span class="font-label-numeric-lg text-[28px] leading-none text-on-surface font-semibold">215.00</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">μm</span>
+</div>
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>الكثافة الحجمية:</span>
+<span class="text-on-surface">0.697 g/cm³</span>
+</div>
+<div class="flex justify-between text-outline">
+<span>النطاق الهندسي:</span>
+<span>210.00 – 225.00</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs bg-surface-container-lowest p-1.5 flex items-center justify-between">
+<span class="px-1.5 py-0.5 bg-tertiary/20 text-tertiary font-label-caps text-label-caps font-semibold">CONFORM</span>
+<span class="font-body-sm text-body-sm text-tertiary truncate">متطابق هندسياً</span>
+</div>
+</div>
+<!-- Card 4: Mullen Bursting Strength -->
+<div class="bg-surface-container-low p-space-md flex flex-col justify-between shadow-sm hover:bg-surface-container transition-colors">
+<div>
+<div class="flex items-center justify-between text-outline font-label-caps text-label-caps mb-space-xs">
+<span>جهاز مولن الهيدروليكي</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary font-bold">INST #MB02</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block font-medium">مقاومة الانفجار بالضغط</span>
+<div class="my-space-sm flex items-baseline gap-1">
+<span class="font-label-numeric-lg text-[28px] leading-none text-on-surface font-semibold">385.00</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">kPa</span>
+</div>
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>الحد الأدنى الإلزامي:</span>
+<span class="text-on-surface">350.00 kPa</span>
+</div>
+<div class="flex justify-between text-outline">
+<span>معامل القوة الفعلي:</span>
+<span class="text-tertiary font-semibold">+10.0% MARGIN</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs bg-surface-container-lowest p-1.5 flex items-center justify-between">
+<span class="px-1.5 py-0.5 bg-tertiary/20 text-tertiary font-label-caps text-label-caps font-semibold">SUPERIOR</span>
+<span class="font-body-sm text-body-sm text-tertiary truncate">فائق القوة والمتانة</span>
+</div>
+</div>
+<!-- Card 5: Cobb 60 Water Absorption -->
+<div class="bg-surface-container-low p-space-md flex flex-col justify-between shadow-sm hover:bg-surface-container transition-colors">
+<div>
+<div class="flex items-center justify-between text-outline font-label-caps text-label-caps mb-space-xs">
+<span>جهاز اختبار كوب المائي</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary font-bold">INST #CB05</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block font-medium">امتصاص الماء السطحي Cobb 60</span>
+<div class="my-space-sm flex items-baseline gap-1">
+<span class="font-label-numeric-lg text-[28px] leading-none text-on-surface font-semibold">38.50</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">g/m²</span>
+</div>
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>الحد الأقصى المسموح:</span>
+<span class="text-on-surface">45.00 g/m²</span>
+</div>
+<div class="flex justify-between text-outline">
+<span>زمن التلامس:</span>
+<span>60 SEC / DISTILLED</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs bg-surface-container-lowest p-1.5 flex items-center justify-between">
+<span class="px-1.5 py-0.5 bg-tertiary/20 text-tertiary font-label-caps text-label-caps font-semibold">PASSED</span>
+<span class="font-body-sm text-body-sm text-tertiary truncate">مطابق للمواصفة القياسية</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Absolute Mathematical Guardrail Alert -->
+<div class="w-full bg-error-container/20 p-space-md mb-space-lg shadow-sm flex items-start gap-space-md">
+<div class="w-10 h-10 bg-error/20 flex items-center justify-center shrink-0 text-error">
+<span class="material-symbols-outlined text-[24px]">lock</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-error font-semibold">تنبيه نظام الصرف الآلي وحاجز الأمان المخزني الصارم (AUTOMATED WMS INTERLOCK)</span>
+<span class="font-label-caps text-label-caps text-error bg-error/20 px-2 py-0.5 font-bold">RULE #ERP-SEC-99</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface mt-1 leading-relaxed">
+        بموجب القاعدة الهندسية المعيارية الصارمة لمصنع مصر للورق، يتم قفل أي رول غير حاصل على صفة <strong>[معتمد - RELEASED]</strong> آلياً في سجلات ERP والمخازن. ويستحيل كلياً إصدار إذن صرف أو تجهيز باركود التحميل للشاحنات الخارجية أو الترحيل لمستودع تام الصنع إلا بختم الجودة المعملي المعتمد وتوقيع المشرف الرقمي المشفر.
+      </p>
+</div>
+</div>
+<!-- Section 4: Disposition Decision Gate -->
+<div class="bg-surface-container-low p-space-lg mb-space-lg shadow-md">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">أختام القرار المخزني المعتمد (OFFICIAL QC DISPOSITION GATE)</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">حدد القرار النهائي للرول الفردي بناءً على مطابقة القياسات المعملية الحالية</span>
+</div>
+<span class="font-label-caps text-label-caps text-outline">AUTHORIZATION LEVEL: CHIEF QUALITY AUDITOR</span>
+</div>
+<!-- 4 Industrial Decision Stamp Tiles -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md" id="disposition-container">
+<!-- Option 1: RELEASED (Selected Active) -->
+<button class="group relative text-right p-space-md bg-tertiary-container/30 transition-all flex flex-col justify-between h-36 focus:outline-none ring-2 ring-tertiary" onclick="selectDisposition(this, 'RL')" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-tertiary font-bold">STATE: RL-01</span>
+<div class="w-6 h-6 bg-tertiary flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold block">معتمد صالح للشحن</span>
+<span class="font-label-caps text-label-caps text-tertiary block mt-0.5">RELEASED • PRIME PRODUCTION</span>
+</div>
+<div class="w-full bg-surface-container-lowest px-2 py-1 flex items-center justify-between text-tertiary font-label-numeric-sm text-label-numeric-sm">
+<span>تصريح صرف مباشر</span>
+<span>100% SPEC</span>
+</div>
+</button>
+<!-- Option 2: QUARANTINE -->
+<button class="group relative text-right p-space-md bg-surface-container hover:bg-surface-container-high transition-all flex flex-col justify-between h-36 focus:outline-none" onclick="selectDisposition(this, 'HL')" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-primary font-bold">STATE: HL-02</span>
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]">pause</span>
+</div>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold block">حجز معملي وإعادة فحص</span>
+<span class="font-label-caps text-label-caps text-primary block mt-0.5">QUARANTINE • RE-TEST HOLD</span>
+</div>
+<div class="w-full bg-surface-container-lowest px-2 py-1 flex items-center justify-between text-outline font-label-numeric-sm text-label-numeric-sm">
+<span>تجميد آلي لمدة 24 س</span>
+<span>RE-TEST</span>
+</div>
+</button>
+<!-- Option 3: REJECTED -->
+<button class="group relative text-right p-space-md bg-surface-container hover:bg-surface-container-high transition-all flex flex-col justify-between h-36 focus:outline-none" onclick="selectDisposition(this, 'RJ')" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-error font-bold">STATE: RJ-03</span>
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-error group-hover:bg-error group-hover:text-on-error transition-colors">
+<span class="material-symbols-outlined text-[16px]">block</span>
+</div>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold block">مرفوض تالف كلي</span>
+<span class="font-label-caps text-label-caps text-error block mt-0.5">SCRAP / PULP RE-DEFIBRATION</span>
+</div>
+<div class="w-full bg-surface-container-lowest px-2 py-1 flex items-center justify-between text-outline font-label-numeric-sm text-label-numeric-sm">
+<span>إعادة تدوير إلى العجان</span>
+<span>SCRAP</span>
+</div>
+</button>
+<!-- Option 4: DOWNGRADED -->
+<button class="group relative text-right p-space-md bg-surface-container hover:bg-surface-container-high transition-all flex flex-col justify-between h-36 focus:outline-none" onclick="selectDisposition(this, 'DG')" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="font-label-caps text-label-caps text-secondary font-bold">STATE: DG-04</span>
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
+<span class="material-symbols-outlined text-[16px]">trending_down</span>
+</div>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold block">تخفيض رتبة كرتون</span>
+<span class="font-label-caps text-label-caps text-secondary block mt-0.5">DOWNGRADE • SECONDARY GRADE</span>
+</div>
+<div class="w-full bg-surface-container-lowest px-2 py-1 flex items-center justify-between text-outline font-label-numeric-sm text-label-numeric-sm">
+<span>تحويل إلى بطانة fluting</span>
+<span>GRADE-B</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Section 5: Inspector Certification Signature & Master Actions -->
+<div class="w-full bg-surface-container-lowest p-space-lg shadow-xl">
+<div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-lg">
+<!-- Digital Identity & Stamp of the Chief Inspector -->
+<div class="flex items-center gap-space-md">
+<div class="w-14 h-14 bg-surface-container flex items-center justify-center text-primary shrink-0 relative">
+<span class="material-symbols-outlined text-[32px]">verified_user</span>
+<span class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-tertiary"></span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">د. سامح فؤاد</span>
+<span class="px-2 py-0.5 bg-surface-container text-primary font-label-numeric-sm text-label-numeric-sm">ID: QC-ENG-0441</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">رئيس مختبر ضبط الجودة والمعايرة الفيزيائية • مصنع مصر للورق</span>
+<div class="flex items-center gap-space-xs font-label-numeric-sm text-label-numeric-sm text-outline mt-1">
+<span>RSA-2048 DIGITALLY SIGNED</span>
+<span>•</span>
+<span class="text-tertiary">TOKEN VALID: HW-KEY OK</span>
+</div>
+</div>
+</div>
+<!-- Action Control Buttons -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-sm">
+<!-- Button 2: COA Print -->
+<button class="px-space-lg py-space-md bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex items-center justify-center gap-space-sm font-headline-sm text-headline-sm shadow-sm" onclick="printCOA()" type="button">
+<span class="material-symbols-outlined text-[20px] text-primary">description</span>
+<span>طباعة شهادة المطابقة المعملية (COA)</span>
+</button>
+<!-- Button 1: Commit QC Disposition -->
+<button class="px-space-xl py-space-md bg-primary-container text-on-primary-container hover:bg-primary transition-colors flex items-center justify-center gap-space-sm font-headline-sm text-headline-sm font-semibold shadow-md active:bg-inverse-primary" id="btn-commit" onclick="commitDecision()" type="button">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+<span>اعتماد نتيجة الفحص وتثبيت القرار النهائي</span>
+</button>
+</div>
+</div>
+<!-- Audit Trace Footer -->
+<div class="mt-space-md pt-space-sm bg-surface-container-low px-space-md py-space-xs flex flex-wrap items-center justify-between text-outline font-label-caps text-label-caps">
+<div class="flex items-center gap-space-md">
+<span>IMMUTABLE AUDIT TRAIL: <span class="font-label-numeric-sm text-label-numeric-sm text-on-surface">SHA256: 8f3d0a1b6c...99a0e</span></span>
+<span class="text-surface-variant font-bold">/</span>
+<span>MILL BUS STATUS: SYNCHRONIZED WITH SAP &amp; WMS</span>
+</div>
+<div class="font-label-numeric-sm text-label-numeric-sm text-tertiary">
+        GATE PERMIT GRANTED: SLT-02-JMB-2026-088
+      </div>
+</div>
+</div>
+<script>
+    function selectDisposition(btn, code) {
+      const container = document.getElementById('disposition-container');
+      const buttons = container.querySelectorAll('button');
+      
+      buttons.forEach(b => {
+        b.className = 'group relative text-right p-space-md bg-surface-container hover:bg-surface-container-high transition-all flex flex-col justify-between h-36 focus:outline-none';
+        const iconDiv = b.querySelector('.w-6.h-6');
+        if (iconDiv) {
+          iconDiv.className = 'w-6 h-6 bg-surface-container-high flex items-center justify-center text-outline transition-colors';
+        }
+      });
+
+      if (code === 'RL') {
+        btn.className = 'group relative text-right p-space-md bg-tertiary-container/30 transition-all flex flex-col justify-between h-36 focus:outline-none ring-2 ring-tertiary';
+        const iconDiv = btn.querySelector('.w-6.h-6');
+        if (iconDiv) iconDiv.className = 'w-6 h-6 bg-tertiary flex items-center justify-center text-on-tertiary-container';
+      } else if (code === 'HL') {
+        btn.className = 'group relative text-right p-space-md bg-primary/20 transition-all flex flex-col justify-between h-36 focus:outline-none ring-2 ring-primary';
+        const iconDiv = btn.querySelector('.w-6.h-6');
+        if (iconDiv) iconDiv.className = 'w-6 h-6 bg-primary flex items-center justify-center text-on-primary';
+      } else if (code === 'RJ') {
+        btn.className = 'group relative text-right p-space-md bg-error/20 transition-all flex flex-col justify-between h-36 focus:outline-none ring-2 ring-error';
+        const iconDiv = btn.querySelector('.w-6.h-6');
+        if (iconDiv) iconDiv.className = 'w-6 h-6 bg-error flex items-center justify-center text-on-error';
+      } else if (code === 'DG') {
+        btn.className = 'group relative text-right p-space-md bg-secondary-container/40 transition-all flex flex-col justify-between h-36 focus:outline-none ring-2 ring-secondary';
+        const iconDiv = btn.querySelector('.w-6.h-6');
+        if (iconDiv) iconDiv.className = 'w-6 h-6 bg-secondary flex items-center justify-center text-on-secondary';
+      }
+    }
+
+    function printCOA() {
+      const originalText = event.currentTarget.innerHTML;
+      const btn = event.currentTarget;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>جاري تجهيز وثيقة COA...</span>';
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        alert('تم إرسال شهادة المطابقة المعملية رقم COA-2026-088 إلى طابعة المختبر المركزية (Zebra Network Lab Printer).');
+      }, 700);
+    }
+
+    function commitDecision() {
+      const btn = document.getElementById('btn-commit');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span><span>جاري حفظ القرار وتحديث ERP...</span>';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.className = 'px-space-xl py-space-md bg-tertiary-container text-on-tertiary-container flex items-center justify-center gap-space-sm font-headline-sm text-headline-sm font-semibold shadow-md';
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">task_alt</span><span>تم اعتماد القرار وإلغاء القفل المخزني بنجاح!</span>';
+      }, 900);
+    }
+  </script>
+</div></main></div></body></html>

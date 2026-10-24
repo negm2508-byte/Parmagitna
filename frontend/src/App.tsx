@@ -1,980 +1,1032 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  CheckCircle2, RefreshCw, Scissors, Search, QrCode, ArrowLeftRight, 
-  Wifi, Globe, Plus, Trash2, Check, Factory, 
-  Printer, X, Download, ShieldCheck, UserCheck, Building2, 
-  ArrowRight, CheckCircle, HardDrive
-} from 'lucide-react';
-
-interface HealthData {
-  status: string;
-  system: string;
-  version: string;
-  timestamp: string;
-  databaseConnected: boolean;
-  activeProfiles: string[];
-}
-
-interface SlitCut {
-  id: string;
-  sequence: number;
-  widthMm: number;
-  netWeightKg: number;
-  serialNumber: string;
-}
-
-interface MovementRecord {
-  id: string;
-  rollSerial: string;
-  rollType: 'جامبو' | 'فرعي';
-  movementType: 'PRODUCTION_RECEIPT' | 'STATUS_CHANGE' | 'LOCATION_TRANSFER' | 'DISPATCH' | 'SCRAP';
-  netWeightKg: number;
-  reason: string;
-  actor: string;
-  timestamp: string;
-}
-
-interface RollLabelData {
-  serialNumber: string;
-  barcode: string;
-  grade: string;
-  widthMm: number;
-  netWeightKg: number;
-  grossWeightKg: number;
-  gsm: number;
-  coreMm: number;
-  date: string;
-  operator: string;
-  quality: string;
-}
-
-interface UserProfile {
-  name: string;
-  email: string;
-  role: 'OPERATOR' | 'QC_ENGINEER' | 'WAREHOUSE' | 'PLANT_DIRECTOR';
-  roleArabic: string;
-  factoryName: string;
-  factoryCode: string;
-}
-
-const DEFAULT_USERS: UserProfile[] = [
-  {
-    name: 'م. مسعد عبد الله',
-    email: 'mmycomputar12@gmail.com',
-    role: 'PLANT_DIRECTOR',
-    roleArabic: 'مدير عام المصنع والعمليات',
-    factoryName: 'مجموعة النيل لصناعة وتدوير كرتون التعبئة',
-    factoryCode: 'MILL-EGY-01'
-  },
-  {
-    name: 'أحمد محمود',
-    email: 'ahmed.operator@papererp.internal',
-    role: 'OPERATOR',
-    roleArabic: 'مشغل مقص الرولات SLIT1',
-    factoryName: 'مجموعة النيل لصناعة وتدوير كرتون التعبئة',
-    factoryCode: 'MILL-EGY-01'
-  },
-  {
-    name: 'سارة إبراهيم',
-    email: 'sara.qc@papererp.internal',
-    role: 'QC_ENGINEER',
-    roleArabic: 'مهندسة فحص الجودة والمختبر',
-    factoryName: 'مجموعة النيل لصناعة وتدوير كرتون التعبئة',
-    factoryCode: 'MILL-EGY-01'
-  }
-];
+import { db } from './lib/supabase';
+import { UserProfile, JumboRoll, ChildSlitRoll, QCTest, StockMovement, SlitCut } from './types';
 
 export default function App() {
-  // Navigation & Authentication Views: 'app' | 'register' | 'login'
-  const [authView, setAuthView] = useState<'app' | 'register' | 'login'>('app');
-  const [currentUser, setCurrentUser] = useState<UserProfile>(DEFAULT_USERS[0]);
-  
-  // Registration Form State
-  const [regFactoryName, setRegFactoryName] = useState('مصنع الفرات لورق الفلوتنج والتست لاينر');
-  const [regFactoryCode, setRegFactoryCode] = useState('MILL-FRT-02');
-  const [regName, setRegName] = useState('م. مسعد عبد الله');
-  const [regEmail, setRegEmail] = useState('mmycomputar12@gmail.com');
-  const [regPassword, setRegPassword] = useState('••••••••••••');
-  const [regRole, setRegRole] = useState<'OPERATOR' | 'QC_ENGINEER' | 'WAREHOUSE' | 'PLANT_DIRECTOR'>('PLANT_DIRECTOR');
-  const [registrationNotice, setRegistrationNotice] = useState<string | null>(null);
+  // Navigation State
+  const [activeTab, setActiveTab] = useState<
+    'operational-cockpit' | 'deckle-calculator' | 'roll-genealogy' | 'qc-laboratory-gate' | 'thermal-label-printer' | 'immutable-stock-ledger' | 'rugged-tablet'
+  >('operational-cockpit');
 
-  // Core ERP Navigation Tabs
-  const [activeTab, setActiveTab] = useState<'slitting' | 'genealogy' | 'qc' | 'ledger' | 'network'>('slitting');
-  const [health, setHealth] = useState<HealthData | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [copiedLan, setCopiedLan] = useState<boolean>(false);
-  const [executingCut, setExecutingCut] = useState<boolean>(false);
+  // Core Data State (Loaded from DB / Supabase)
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [jumbos, setJumbos] = useState<JumboRoll[]>([]);
+  const [childRolls, setChildRolls] = useState<ChildSlitRoll[]>([]);
+  const [qcTests, setQcTests] = useState<QCTest[]>([]);
+  const [movements, setMovements] = useState<StockMovement[]>([]);
 
-  // Thermal Barcode Label Modal State
-  const [printModalRoll, setPrintModalRoll] = useState<RollLabelData | null>(null);
+  // Modals State
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [showDbModal, setShowDbModal] = useState<boolean>(false);
+  const [showMovementModal, setShowMovementModal] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Live Mill Clock
+  const [currentTimeStr, setCurrentTimeStr] = useState<string>('');
 
   // Slitting Calculator State
-  const jumboDeckleWidth = 2400; // mm
-  const jumboNetWeight = 3000; // kg
+  const [selectedJumbo, setSelectedJumbo] = useState<JumboRoll | null>(null);
   const [cuts, setCuts] = useState<SlitCut[]>([
-    { id: '1', sequence: 1, widthMm: 1000, netWeightKg: 1245, serialNumber: 'SLT-1-JMB-2026-001' },
-    { id: '2', sequence: 2, widthMm: 1000, netWeightKg: 1245, serialNumber: 'SLT-2-JMB-2026-001' },
-    { id: '3', sequence: 3, widthMm: 350, netWeightKg: 435, serialNumber: 'SLT-3-JMB-2026-001' },
+    { id: '1', sequence: 1, widthMm: 1000, netWeightKg: 1245, serialNumber: 'SLT-01-JMB-2026-088', coreMm: 76, targetDiameterMm: 1250, customer: 'شركة الأهرام لكرتون التعبئة' },
+    { id: '2', sequence: 2, widthMm: 1000, netWeightKg: 1245, serialNumber: 'SLT-02-JMB-2026-088', coreMm: 76, targetDiameterMm: 1250, customer: 'مصنع الشرق الأوسط للورق' },
+    { id: '3', sequence: 3, widthMm: 350, netWeightKg: 435, serialNumber: 'SLT-03-JMB-2026-088', coreMm: 76, targetDiameterMm: 1250, customer: 'العبور للطباعة والتغليف' },
   ]);
-
   const [trimWasteKg, setTrimWasteKg] = useState<number>(65);
-  const [slittingSuccess, setSlittingSuccess] = useState<boolean>(false);
+  const [newCutWidth, setNewCutWidth] = useState<number>(500);
+  const [newCutWeight, setNewCutWeight] = useState<number>(620);
+  const [executingSlit, setExecutingSlit] = useState<boolean>(false);
 
-  // Calculations for Mass Balance
-  const totalCutWidth = cuts.reduce((sum, c) => sum + c.widthMm, 0);
-  const trimWasteMm = Math.max(0, jumboDeckleWidth - totalCutWidth);
-  const totalChildWeight = cuts.reduce((sum, c) => sum + c.netWeightKg, 0);
-  const massBalanceVariance = jumboNetWeight - (totalChildWeight + trimWasteKg);
-  const isWidthExceeded = totalCutWidth > jumboDeckleWidth;
-  const isVarianceExceeded = Math.abs(massBalanceVariance) > (jumboNetWeight * 0.01);
-
-  // Search & Genealogy State
-  const [searchSerial, setSearchSerial] = useState<string>('SLT-1-JMB-2026-001');
-
-  // Quality Control Lab Gate State
-  const [qcGsm, setQcGsm] = useState<number>(126.4);
-  const [qcMoisture, setQcMoisture] = useState<number>(7.2);
-  const [qcCaliper, setQcCaliper] = useState<number>(185);
-  const [qcBurst, setQcBurst] = useState<number>(310);
+  // QC Form State
+  const [qcRollSerial, setQcRollSerial] = useState<string>('SLT-03-JMB-2026-088');
+  const [qcGsm, setQcGsm] = useState<number>(150.2);
+  const [qcMoisture, setQcMoisture] = useState<number>(7.3);
+  const [qcCaliper, setQcCaliper] = useState<number>(220);
+  const [qcBurst, setQcBurst] = useState<number>(392);
+  const [qcCobb, setQcCobb] = useState<number>(33);
   const [qcDisposition, setQcDisposition] = useState<'RELEASED' | 'QUARANTINE' | 'REJECTED' | 'DOWNGRADED'>('RELEASED');
-  const [qcSavedSuccess, setQcSavedSuccess] = useState<boolean>(false);
+  const [qcNotes, setQcNotes] = useState<string>('تم الفحص المخبري وتأكيد مطابقة الوزن والشد والمحتوى الرطوبي');
 
-  // Immutable Movement Ledger Records
-  const [ledger, setLedger] = useState<MovementRecord[]>([
-    { id: 'MOV-1001', rollSerial: 'JMB-2026-001', rollType: 'جامبو', movementType: 'PRODUCTION_RECEIPT', netWeightKg: 3000, reason: 'خروج رول الجامبو من درفيل ماكينة الورق PM1', actor: 'أحمد محمود (مشغل)', timestamp: '2026-10-24 14:15:00' },
-    { id: 'MOV-1002', rollSerial: 'JMB-2026-001', rollType: 'جامبو', movementType: 'STATUS_CHANGE', netWeightKg: 3000, reason: 'استهلاك وتقطيع رول الجامبو على مقص الرولات SLIT1', actor: 'أحمد محمود (مشغل)', timestamp: '2026-10-24 14:30:00' },
-    { id: 'MOV-1003', rollSerial: 'SLT-1-JMB-2026-001', rollType: 'فرعي', movementType: 'PRODUCTION_RECEIPT', netWeightKg: 1245, reason: 'إنتاج رول مقصوص عرض 1000 مم - مطابق فلوتنج 125 جم', actor: 'أحمد محمود (مشغل)', timestamp: '2026-10-24 14:30:00' },
-    { id: 'MOV-1004', rollSerial: 'SLT-2-JMB-2026-001', rollType: 'فرعي', movementType: 'PRODUCTION_RECEIPT', netWeightKg: 1245, reason: 'إنتاج رول مقصوص عرض 1000 مم - مطابق فلوتنج 125 جم', actor: 'أحمد محمود (مشغل)', timestamp: '2026-10-24 14:30:00' },
-    { id: 'MOV-1005', rollSerial: 'SLT-3-JMB-2026-001', rollType: 'فرعي', movementType: 'PRODUCTION_RECEIPT', netWeightKg: 435, reason: 'إنتاج رول مقصوص عرض 350 مم - مخصص لصناديق صغيرة', actor: 'أحمد محمود (مشغل)', timestamp: '2026-10-24 14:30:00' },
-    { id: 'MOV-1006', rollSerial: 'SLT-1-JMB-2026-001', rollType: 'فرعي', movementType: 'LOCATION_TRANSFER', netWeightKg: 1245, reason: 'نقل من صالة التقطيع إلى رصيف التخزين المستودع A-04', actor: 'خالد إبراهيم (أمين مخزن)', timestamp: '2026-10-24 15:10:00' },
-  ]);
+  // Thermal Label State
+  const [selectedLabelRollSerial, setSelectedLabelRollSerial] = useState<string>('SLT-01-JMB-2026-088');
+  const [labelPrinter, setLabelPrinter] = useState<string>('Zebra ZT411 (صالة الإنتاج PM1)');
+  const [labelCopies, setLabelCopies] = useState<number>(2);
 
-  const [ledgerFilter, setLedgerFilter] = useState<string>('ALL');
+  // Genealogy Search State
+  const [genealogySearch, setGenealogySearch] = useState<string>('JMB-2026-088');
 
-  const fetchHealth = async () => {
-    setLoading(true);
+  // Stock Movement Filter State
+  const [movementFilter, setMovementFilter] = useState<string>('ALL');
+
+  // Register Form State
+  const [regFullName, setRegFullName] = useState<string>('');
+  const [regEmail, setRegEmail] = useState<string>('');
+  const [regRole, setRegRole] = useState<'CHIEF_OPERATOR' | 'QC_INSPECTOR' | 'MILL_MANAGER' | 'WAREHOUSE_KEEPER'>('CHIEF_OPERATOR');
+  const [regPlant, setRegPlant] = useState<string>('مصنع مصر للورق والكرتون • وحدة PM1');
+
+  // Database Supabase Settings State
+  const [dbUrl, setDbUrl] = useState<string>('');
+  const [dbKey, setDbKey] = useState<string>('');
+  const [dbStatusText, setDbStatusText] = useState<string>('');
+
+  // Manual Movement Form State
+  const [newMovSerial, setNewMovSerial] = useState<string>('SLT-02-JMB-2026-088');
+  const [newMovType, setNewMovType] = useState<'PRODUCTION_RECEIPT' | 'STATUS_CHANGE' | 'LOCATION_TRANSFER' | 'DISPATCH' | 'SCRAP'>('LOCATION_TRANSFER');
+  const [newMovWeight, setNewMovWeight] = useState<number>(1245);
+  const [newMovFrom, setNewMovFrom] = useState<string>('محطة فحص الجودة QC Lab');
+  const [newMovTo, setNewMovTo] = useState<string>('مستودع A - ممر 04 - رصة 2');
+  const [newMovReason, setNewMovReason] = useState<string>('نقل للمستودع بعد انتهاء الاختبارات');
+
+  // Load Data on Startup
+  const loadAllData = async () => {
     try {
-      const res = await fetch('/api/v1/health');
-      if (res.ok) {
-        const data = await res.json();
-        setHealth(data);
-      }
-    } catch {
-      // Offline fallback state
-    } finally {
-      setLoading(false);
+      const u = await db.getUsers();
+      setUsers(u);
+      if (u.length > 0 && !currentUser) setCurrentUser(u[0]);
+
+      const j = await db.getJumboRolls();
+      setJumbos(j);
+      if (j.length > 0 && !selectedJumbo) setSelectedJumbo(j[0]);
+
+      const c = await db.getChildRolls();
+      setChildRolls(c);
+
+      const q = await db.getQCTests();
+      setQcTests(q);
+
+      const m = await db.getMovements();
+      setMovements(m);
+    } catch (err) {
+      console.error('Error loading data:', err);
     }
   };
 
   useEffect(() => {
-    fetchHealth();
+    loadAllData();
+    const config = db.getSupabaseConfig();
+    setDbUrl(config.url);
+    setDbKey(config.key);
   }, []);
 
-  const addCut = () => {
-    const nextSeq = cuts.length + 1;
-    const defaultWidth = 300;
-    const defaultWeight = Math.round((defaultWidth / jumboDeckleWidth) * jumboNetWeight * 0.98);
-    setCuts([...cuts, {
-      id: String(Date.now()),
-      sequence: nextSeq,
-      widthMm: defaultWidth,
-      netWeightKg: defaultWeight,
-      serialNumber: `SLT-${nextSeq}-JMB-2026-001`
-    }]);
+  // Live Mill Clock update
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      const ms = String(now.getMilliseconds()).padStart(3, '0');
+      setCurrentTimeStr(`${h}:${m}:${s}.${ms}`);
+    };
+    updateClock();
+    const timer = setInterval(updateClock, 100);
+    return () => clearInterval(timer);
+  }, []);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
-  const removeCut = (id: string) => {
+  // Calculations for Slitting Deckle
+  const currentJumboWidth = selectedJumbo ? selectedJumbo.deckleWidthMm : 2400;
+  const currentJumboNetWeight = selectedJumbo ? selectedJumbo.netWeightKg : 3000;
+  const totalCutsWidth = cuts.reduce((sum, c) => sum + c.widthMm, 0);
+  const trimWasteMm = Math.max(0, currentJumboWidth - totalCutsWidth);
+  const totalChildWeight = cuts.reduce((sum, c) => sum + c.netWeightKg, 0);
+  const massBalanceVarianceKg = currentJumboNetWeight - (totalChildWeight + trimWasteKg);
+  const massBalanceVariancePct = ((Math.abs(massBalanceVarianceKg) / currentJumboNetWeight) * 100);
+  const isWidthExceeded = totalCutsWidth > currentJumboWidth;
+  const isMassBalanceValid = massBalanceVariancePct <= 1.0;
+
+  // Add Cut Knife
+  const handleAddCut = () => {
+    if (newCutWidth <= 0 || newCutWeight <= 0) {
+      alert('يرجى إدخال أبعاد صحيحة للرول');
+      return;
+    }
+    const nextSeq = cuts.length + 1;
+    const parentSerial = selectedJumbo ? selectedJumbo.serialNumber : 'JMB-2026-088';
+    const newCut: SlitCut = {
+      id: String(Date.now()),
+      sequence: nextSeq,
+      widthMm: Number(newCutWidth),
+      netWeightKg: Number(newCutWeight),
+      serialNumber: `SLT-0${nextSeq}-${parentSerial}`,
+      coreMm: 76,
+      targetDiameterMm: 1250,
+      customer: 'عميل تصنيع كرتون محلي'
+    };
+    setCuts([...cuts, newCut]);
+    showToast(`تمت إضافة سكين التقطيع رقم ${nextSeq} بعرض ${newCutWidth} مم`);
+  };
+
+  const handleDeleteCut = (id: string) => {
     setCuts(cuts.filter(c => c.id !== id));
   };
 
-  const executeSlitting = async () => {
-    if (isWidthExceeded || isVarianceExceeded) return;
-    setExecutingCut(true);
-
+  // Execute Slitting Run
+  const handleExecuteSlitting = async () => {
+    if (isWidthExceeded) {
+      alert('خطأ: إجمالي عرض الرولات يتجاوز عرض الرول الأم!');
+      return;
+    }
+    setExecutingSlit(true);
     try {
-      const payload = {
-        jumboSerialNumber: 'JMB-2026-001',
-        trimWasteKg: trimWasteKg,
-        cuts: cuts.map(c => ({
-          positionIndex: c.sequence,
-          widthMm: c.widthMm,
-          diameterMm: 1200,
-          netWeightKg: c.netWeightKg,
-          coreDiameterMm: 76
-        }))
-      };
-
-      const res = await fetch('/api/v1/slitting/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        // live backend acknowledged
-      }
-    } catch {
-      // Offline fallback
-    } finally {
-      const newEntries: MovementRecord[] = cuts.map((c, idx) => ({
-        id: `MOV-${Date.now().toString().slice(-4)}-${idx + 1}`,
-        rollSerial: c.serialNumber,
-        rollType: 'فرعي',
-        movementType: 'PRODUCTION_RECEIPT',
-        netWeightKg: c.netWeightKg,
-        reason: `إنتاج رول مقصوص عرض ${c.widthMm} مم من الجامبو JMB-2026-001`,
-        actor: currentUser.name,
-        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      }));
-      setLedger(prev => [...newEntries, ...prev]);
-      setExecutingCut(false);
-      setSlittingSuccess(true);
-      setTimeout(() => setSlittingSuccess(false), 5000);
-    }
-  };
-
-  const copyLanUrl = () => {
-    navigator.clipboard.writeText('http://192.168.9.223:5173');
-    setCopiedLan(true);
-    setTimeout(() => setCopiedLan(false), 2500);
-  };
-
-  const openLabelPrint = (roll: Partial<RollLabelData>) => {
-    setPrintModalRoll({
-      serialNumber: roll.serialNumber || 'SLT-1-JMB-2026-001',
-      barcode: roll.barcode || 'SR-2026-001-01',
-      grade: roll.grade || 'فلوتنج 125 جم (Fluting 125)',
-      widthMm: roll.widthMm || 1000,
-      netWeightKg: roll.netWeightKg || 1245,
-      grossWeightKg: (roll.netWeightKg || 1245) + 2,
-      gsm: roll.gsm || 125,
-      coreMm: roll.coreMm || 76,
-      date: new Date().toLocaleDateString('ar-EG'),
-      operator: currentUser.name,
-      quality: 'مطابق للمواصفات القياسية (RELEASED)'
-    });
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const exportLedgerCsv = () => {
-    const headers = ['معرف الحركة', 'رقم الرول', 'نوع الرول', 'نوع الحركة', 'الوزن (كجم)', 'البيان', 'المشغل', 'التوقيت'];
-    const rows = ledger.map(r => [r.id, r.rollSerial, r.rollType, r.movementType, r.netWeightKg, `"${r.reason}"`, r.actor, r.timestamp]);
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `papererp_ledger_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const roleMap = {
-      'OPERATOR': 'مشغل خط إنتاج ومقصات',
-      'QC_ENGINEER': 'مهندس فحص جودة ومختبر',
-      'WAREHOUSE': 'أمين مستودع ورولات',
-      'PLANT_DIRECTOR': 'مدير عام المصنع والعمليات'
-    };
-
-    const newUser: UserProfile = {
-      name: regName || 'مستخدم جديد',
-      email: regEmail || 'user@papererp.internal',
-      role: regRole,
-      roleArabic: roleMap[regRole],
-      factoryName: regFactoryName || 'مصنع تجريبي',
-      factoryCode: regFactoryCode || 'MILL-DEMO'
-    };
-
-    setCurrentUser(newUser);
-    setRegistrationNotice(`تم إنشاء حساب المنشأة [${newUser.factoryName}] بنجاح وتفعيل جلسة [${newUser.name}]!`);
-    setTimeout(() => {
-      setRegistrationNotice(null);
-      setAuthView('app');
-    }, 2000);
-  };
-
-  const switchDemoRole = (role: 'OPERATOR' | 'QC_ENGINEER' | 'PLANT_DIRECTOR') => {
-    const found = DEFAULT_USERS.find(u => u.role === role);
-    if (found) {
-      setCurrentUser(found);
-      setRegistrationNotice(`تم التبديل الفوري إلى صلاحية: ${found.roleArabic}`);
-      setTimeout(() => setRegistrationNotice(null), 2500);
-    }
-  };
-
-  const saveQcInspection = () => {
-    setQcSavedSuccess(true);
-    const newEntry: MovementRecord = {
-      id: `MOV-QC-${Date.now().toString().slice(-4)}`,
-      rollSerial: 'SLT-1-JMB-2026-001',
-      rollType: 'فرعي',
-      movementType: 'STATUS_CHANGE',
-      netWeightKg: 1245,
-      reason: `اعتماد قرار الجودة [${qcDisposition}] - GSM: ${qcGsm} جم، رطوبة: ${qcMoisture}%`,
-      actor: currentUser.name,
-      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
-    };
-    setLedger(prev => [newEntry, ...prev]);
-    setTimeout(() => setQcSavedSuccess(false), 3500);
-  };
-
-  // Filtered Ledger
-  const filteredLedger = ledgerFilter === 'ALL' ? ledger : ledger.filter(r => r.movementType === ledgerFilter);
-
-  // ---------------------------------------------------------------------------
-  // VIEW: REGISTER PAGE
-  // ---------------------------------------------------------------------------
-  if (authView === 'register') {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Cairo, system-ui, sans-serif', padding: '32px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ maxWidth: 680, width: '100%', background: '#111726', border: '1px solid #1f293d', borderRadius: 12, padding: 32, boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1f293d', paddingBottom: 20, marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ background: '#1e2638', border: '1px solid #2e3b55', borderRadius: 8, padding: 8, display: 'flex' }}>
-                <Building2 size={24} color="#c88a35" />
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f8fafc', margin: 0 }}>تسجيل مصنع / مستخدم جديد في المنصة</h2>
-                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>PaperERP Enterprise — تهيئة العزل السحابي والبيانات الأولية</span>
-              </div>
-            </div>
-            <button 
-              onClick={() => setAuthView('app')}
-              style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem' }}
-            >
-              <ArrowRight size={16} />
-              العودة للوحة التحكم
-            </button>
-          </div>
-
-          {registrationNotice && (
-            <div style={{ background: '#064e3b', border: '1px solid #059669', color: '#6ee7b7', padding: '12px 16px', borderRadius: 8, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.9rem' }}>
-              <CheckCircle2 size={18} color="#34d399" />
-              <span>{registrationNotice}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleRegisterSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: 6 }}>اسم المنشأة أو المصنع</label>
-                <input 
-                  type="text" 
-                  required
-                  value={regFactoryName}
-                  onChange={e => setRegFactoryName(e.target.value)}
-                  style={{ width: '100%', background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '10px 14px', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}
-                  placeholder="مثال: مصنع النيل لتدوير الورق"
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: 6 }}>كود المصنع (Tenant ID)</label>
-                <input 
-                  type="text" 
-                  required
-                  value={regFactoryCode}
-                  onChange={e => setRegFactoryCode(e.target.value)}
-                  style={{ width: '100%', background: '#090d16', border: '1px solid #1f293d', color: '#c88a35', fontFamily: 'JetBrains Mono, monospace', padding: '10px 14px', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}
-                  placeholder="MILL-01"
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: 6 }}>اسم المسؤول / المشغل</label>
-                <input 
-                  type="text" 
-                  required
-                  value={regName}
-                  onChange={e => setRegName(e.target.value)}
-                  style={{ width: '100%', background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '10px 14px', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}
-                  placeholder="الاسم الثلاثي"
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: 6 }}>البريد الإلكتروني للعمل</label>
-                <input 
-                  type="email" 
-                  required
-                  value={regEmail}
-                  onChange={e => setRegEmail(e.target.value)}
-                  style={{ width: '100%', background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '10px 14px', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}
-                  placeholder="mmycomputar12@gmail.com"
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: 6 }}>الدور الوظيفي والصلاحيات</label>
-                <select 
-                  value={regRole}
-                  onChange={e => setRegRole(e.target.value as any)}
-                  style={{ width: '100%', background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '10px 14px', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}
-                >
-                  <option value="PLANT_DIRECTOR">مدير عام المصنع والعمليات (صلاحية كاملة)</option>
-                  <option value="OPERATOR">مشغل خط إنتاج ومقصات (صالة المصنع)</option>
-                  <option value="QC_ENGINEER">مهندس فحص جودة ومختبر قياس</option>
-                  <option value="WAREHOUSE">أمين مستودع ورولات جاهزة</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: 6 }}>كلمة المرور</label>
-                <input 
-                  type="password" 
-                  required
-                  value={regPassword}
-                  onChange={e => setRegPassword(e.target.value)}
-                  style={{ width: '100%', background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '10px 14px', borderRadius: 6, fontSize: '0.9rem', outline: 'none' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 16, marginBottom: 24, fontSize: '0.85rem', color: '#94a3b8' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#c88a35', fontWeight: 700, marginBottom: 6 }}>
-                <ShieldCheck size={18} />
-                <span>نظام عزل البيانات المتعدد (Composite Zero-Trust Multi-Tenancy)</span>
-              </div>
-              <p style={{ margin: 0, lineHeight: 1.6 }}>
-                كل مصنع يحصل على مفتاح عزل برمجي مشفر يضمن عدم اختلاط سجلات تقطيع الرولات، مخزون الجامبو، أو شهادات فحص الجودة مع أي مصانع أو فروع أخرى على السيرفر.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button 
-                type="submit"
-                style={{ flex: 1, background: '#c88a35', border: '1px solid #e09b3d', color: '#090d16', padding: '12px 20px', borderRadius: 6, fontSize: '0.95rem', fontWeight: 800, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}
-              >
-                <CheckCircle size={18} />
-                تأكيد تسجيل المنشأة والدخول المباشر
-              </button>
-
-              <button 
-                type="button"
-                onClick={() => setAuthView('app')}
-                style={{ background: '#1e2638', border: '1px solid #2e3b55', color: '#cbd5e1', padding: '12px 20px', borderRadius: 6, fontSize: '0.9rem', cursor: 'pointer' }}
-              >
-                إلغاء
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // MAIN VIEW: INDUSTRIAL DASHBOARD
-  // ---------------------------------------------------------------------------
-  return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', paddingBottom: 48, fontFamily: 'Cairo, system-ui, sans-serif' }}>
+      const parentSerial = selectedJumbo ? selectedJumbo.serialNumber : 'JMB-2026-088';
+      const operator = currentUser ? currentUser.fullName : 'م. أحمد محمود';
       
-      {/* Top Banner Notice */}
-      {registrationNotice && (
-        <div style={{ background: '#064e3b', borderBottom: '1px solid #059669', color: '#a7f3d0', padding: '10px 24px', textAlign: 'center', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-          <CheckCircle2 size={16} color="#34d399" />
-          <span>{registrationNotice}</span>
+      const newRolls = await db.saveSlittingRun(parentSerial, cuts, operator);
+      await loadAllData();
+      
+      setExecutingSlit(false);
+      showToast(`تم تنفيذ أمر التقطيع وتوليد ${newRolls.length} رول فرعي وحفظ القيود في سجل المخزن بنجاح!`);
+      setActiveTab('roll-genealogy');
+    } catch (e) {
+      setExecutingSlit(false);
+      alert('حدث خطأ أثناء تنفيذ أمر التقطيع');
+    }
+  };
+
+  // Save QC Test
+  const handleSaveQCTest = async () => {
+    if (!qcRollSerial) {
+      alert('يرجى تحديد سيريال الرول المراد فحصه');
+      return;
+    }
+    const inspector = currentUser ? currentUser.fullName : 'ك. مصطفى إبراهيم';
+    await db.saveQCTest({
+      rollSerial: qcRollSerial,
+      grade: 'Testliner Grade-A',
+      actualGsm: Number(qcGsm),
+      targetGsm: 150,
+      moisturePct: Number(qcMoisture),
+      caliperMicrons: Number(qcCaliper),
+      burstKpa: Number(qcBurst),
+      cobb60: Number(qcCobb),
+      disposition: qcDisposition,
+      inspector,
+      labNotes: qcNotes
+    });
+    await loadAllData();
+    showToast(`تم اعتماد وتوثيق فحص الجودة للرول ${qcRollSerial} بالحالة [${qcDisposition}]`);
+  };
+
+  // Register New User
+  const handleRegisterUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regFullName || !regEmail) {
+      alert('يرجى كتابة الاسم والبريد الإلكتروني');
+      return;
+    }
+    const newUser = await db.registerUser({
+      fullName: regFullName,
+      email: regEmail,
+      role: regRole,
+      plant: regPlant
+    });
+    setCurrentUser(newUser);
+    setShowAuthModal(false);
+    setRegFullName('');
+    setRegEmail('');
+    await loadAllData();
+    showToast(`مرحباً بك ${newUser.fullName}! تم تسجيل حسابك بصلاحية [${newUser.role}] بنجاح.`);
+  };
+
+  // Save Supabase Configuration
+  const handleSaveDbConfig = () => {
+    db.setSupabaseConfig(dbUrl, dbKey);
+    const connected = db.isSupabaseConnected();
+    setDbStatusText(connected ? 'تم الاتصال بقاعدة بيانات Supabase بنجاح! سيتم التزامن السحابي الآن.' : 'تم التبديل للتخزين المحلي عالي السرعة (Local Persistence).');
+    showToast(connected ? 'متصل بسحابة Supabase PostgreSQL' : 'يعمل الآن في وضع التخزين المحلي الآمن');
+    setTimeout(() => setShowDbModal(false), 1500);
+  };
+
+  // Add Manual Movement
+  const handleAddManualMovement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const actor = currentUser ? currentUser.fullName : 'م. أحمد محمود';
+    await db.addMovement({
+      rollSerial: newMovSerial,
+      rollCategory: newMovSerial.startsWith('JMB') ? 'جامبو' : 'فرعي',
+      movementType: newMovType,
+      netWeightKg: Number(newMovWeight),
+      fromLocation: newMovFrom,
+      toLocation: newMovTo,
+      actor,
+      reason: newMovReason
+    });
+    await loadAllData();
+    setShowMovementModal(false);
+    showToast(`تم توثيق حركة المخزن للرول ${newMovSerial} بنجاح!`);
+  };
+
+  // Get active roll for label
+  const activeLabelRoll = childRolls.find(r => r.serialNumber === selectedLabelRollSerial) || childRolls[0] || {
+    serialNumber: 'SLT-01-JMB-2026-088',
+    parentJumboSerial: 'JMB-2026-088',
+    grade: 'Testliner Grade-A',
+    widthMm: 1000,
+    netWeightKg: 1245,
+    grossWeightKg: 1247,
+    gsm: 150,
+    coreMm: 76,
+    diameterMm: 1250,
+    location: 'مستودع A - ممر 04 - رصة 2',
+    operatorName: 'م. أحمد محمود',
+    createdAt: '2026-10-24 14:45:00',
+    status: 'QC_PASSED'
+  };
+
+  // Filtered movements
+  const filteredMovements = movements.filter(m => {
+    if (movementFilter === 'ALL') return true;
+    return m.movementType === movementFilter;
+  });
+
+  return (
+    <div className="bg-[#10131a] text-[#e1e2ec] min-h-screen antialiased selection:bg-[#c88a35] selection:text-[#452900] flex flex-col font-sans">
+      
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-6 z-50 bg-[#1d1f27] border-2 border-[#4edea3] text-[#e1e2ec] px-5 py-3 shadow-2xl flex items-center gap-3 animate-bounce">
+          <span className="material-symbols-outlined text-[#4edea3] text-[24px]">verified</span>
+          <span className="font-medium text-sm">{toastMessage}</span>
         </div>
       )}
 
-      {/* Top Industrial Navigation Header */}
-      <header style={{ background: '#111726', borderBottom: '1px solid #1f293d', padding: '14px 24px', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-          
-          {/* Brand & Factory Status */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ background: '#1a2233', border: '1px solid #28354f', borderRadius: 8, padding: 9, display: 'flex' }}>
-              <Factory size={26} color="#c88a35" />
+      {/* TOP HEADER */}
+      <header className="fixed top-0 left-0 right-0 h-16 z-50 bg-[#0b0e15]/95 backdrop-blur-md flex items-center justify-between px-6 border-b border-[#32353d]/40">
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-[#c88a35] flex items-center justify-center">
+              <span className="material-symbols-outlined text-[#452900] text-[20px]">precision_manufacturing</span>
             </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <h1 style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '-0.3px', color: '#f8fafc', margin: 0 }}>PaperERP Enterprise</h1>
-                <span style={{ fontSize: '0.7rem', background: '#1c2436', border: '1px solid #2d3a56', color: '#c88a35', padding: '2px 8px', borderRadius: 4, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace' }}>
-                  {currentUser.factoryCode}
-                </span>
-                <span style={{ fontSize: '0.7rem', background: '#064e3b', border: '1px solid #059669', color: '#6ee7b7', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
-                  ديمو تفاعلي مباشر
-                </span>
-              </div>
-              <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: '2px 0 0 0' }}>
-                نظام تتبع رولات الورق، ميزان الكتلة، وإدارة المخزون متعدد المصانع ({currentUser.factoryName})
-              </p>
+            <div className="flex flex-col">
+              <span className="text-[17px] font-bold text-[#feb95f] tracking-tight">PaperERP Enterprise</span>
+              <span className="text-[10px] text-[#d6c3b2]">مصنع مصر للورق والكرتون • وحدة التحكم الرئيسية PM1</span>
             </div>
           </div>
 
-          {/* User Profile & Quick Switcher */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-            
-            {/* Active User Card */}
-            <div style={{ background: '#151d2e', border: '1px solid #222e47', padding: '5px 12px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <UserCheck size={16} color="#38bdf8" />
-              <div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f8fafc' }}>{currentUser.name}</div>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{currentUser.roleArabic}</div>
+          <div className="h-6 w-px bg-[#32353d]/50 hidden md:block"></div>
+
+          <div className="hidden lg:flex items-center gap-3 text-[11px] font-mono">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#191b23] border border-[#32353d]/60">
+              <span className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse"></span>
+              <span className="text-[#4edea3] font-semibold">LAN 192.168.9.223</span>
+              <span className="text-[#94a3b8]">(متصل - صالة الإنتاج PM1)</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#191b23] border border-[#32353d]/60 font-sans">
+              <span className="material-symbols-outlined text-[#feb95f] text-[14px]">schedule</span>
+              <span className="text-[#e1e2ec]">وردية المساء • خط PM1</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Live Mill Clock */}
+          <div className="hidden sm:flex flex-col items-end px-3 py-1 bg-[#191b23] border border-[#32353d]/40 font-mono">
+            <span className="text-[14px] text-[#feb95f] tracking-wider font-semibold">{currentTimeStr || '14:48:22.840'}</span>
+            <span className="text-[9px] text-[#94a3b8] tracking-widest font-sans">UTC+02:00 CAIRO MILL TIME</span>
+          </div>
+
+          {/* Database Cloud Sync Status Button */}
+          <button 
+            onClick={() => setShowDbModal(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1d1f27] hover:bg-[#272a32] border border-[#32353d] text-xs transition-colors"
+            title="إعدادات قاعدة البيانات والسحابة"
+          >
+            <span className={`w-2 h-2 rounded-full ${db.isSupabaseConnected() ? 'bg-[#4edea3]' : 'bg-[#feb95f]'}`}></span>
+            <span className="material-symbols-outlined text-[16px] text-[#feb95f]">database</span>
+            <span className="hidden md:inline font-mono text-[11px]">
+              {db.isSupabaseConnected() ? 'Supabase PostgreSQL' : 'Local Persistence'}
+            </span>
+          </button>
+
+          {/* User Account / Register Button */}
+          <div className="flex items-center gap-2 pr-2 border-r border-[#32353d]/50">
+            <button 
+              onClick={() => setShowAuthModal(true)}
+              className="flex items-center gap-2 px-2.5 py-1 bg-[#1d1f27] hover:bg-[#272a32] border border-[#32353d] transition-colors"
+            >
+              <div className="hidden md:flex flex-col text-right">
+                <span className="text-[11px] font-bold text-[#e1e2ec]">{currentUser ? currentUser.fullName : 'أحمد محمود'}</span>
+                <span className="text-[9px] text-[#feb95f] font-mono">{currentUser ? currentUser.role : 'CHIEF_OPERATOR'}</span>
               </div>
-            </div>
-
-            {/* Quick Role Switcher Buttons */}
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button 
-                onClick={() => switchDemoRole('PLANT_DIRECTOR')}
-                style={{ background: currentUser.role === 'PLANT_DIRECTOR' ? '#c88a35' : '#151d2e', color: currentUser.role === 'PLANT_DIRECTOR' ? '#090d16' : '#94a3b8', border: '1px solid #222e47', padding: '5px 10px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
-                title="الدخول كمدير مصنع"
-              >
-                مدير
-              </button>
-              <button 
-                onClick={() => switchDemoRole('OPERATOR')}
-                style={{ background: currentUser.role === 'OPERATOR' ? '#c88a35' : '#151d2e', color: currentUser.role === 'OPERATOR' ? '#090d16' : '#94a3b8', border: '1px solid #222e47', padding: '5px 10px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
-                title="الدخول كمشغل مقصات"
-              >
-                مشغل
-              </button>
-              <button 
-                onClick={() => switchDemoRole('QC_ENGINEER')}
-                style={{ background: currentUser.role === 'QC_ENGINEER' ? '#c88a35' : '#151d2e', color: currentUser.role === 'QC_ENGINEER' ? '#090d16' : '#94a3b8', border: '1px solid #222e47', padding: '5px 10px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
-                title="الدخول كمهندس جودة"
-              >
-                جودة
-              </button>
-            </div>
-
-            {/* Register New Factory Button */}
-            <button 
-              onClick={() => setAuthView('register')}
-              style={{ background: '#1c2436', border: '1px solid #2d3a56', color: '#c88a35', padding: '6px 12px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              <Building2 size={14} />
-              <span>تسجيل مصنع جديد</span>
-            </button>
-
-            {/* Factory LAN Copy Pill */}
-            <button 
-              onClick={copyLanUrl}
-              style={{ background: '#151d2e', border: '1px solid #222e47', color: '#cbd5e1', padding: '6px 12px', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-              title="انقر لنسخ رابط السيرفر المحلي"
-            >
-              <Wifi size={13} color="#38bdf8" />
-              <span>LAN: <strong>192.168.9.223:5173</strong></span>
-              {copiedLan ? <Check size={12} color="#4ade80" /> : <span style={{ fontSize: '0.65rem', color: '#64748b' }}>نسخ</span>}
-            </button>
-
-            {/* Cloudflare Pages Badge */}
-            <div style={{ background: '#0a1d1d', border: '1px solid #0f4c4c', color: '#5eead4', padding: '6px 10px', borderRadius: 6, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Globe size={13} color="#2dd4bf" />
-              <span>Cloudflare Pages</span>
-            </div>
-
-            {/* API Health Refresh */}
-            <button 
-              onClick={fetchHealth} 
-              disabled={loading}
-              style={{ background: '#151d2e', border: '1px solid #222e47', color: '#94a3b8', padding: '6px 10px', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-              {health?.databaseConnected ? 'API متصل' : 'سيرفر محلي'}
+              <div className="w-8 h-8 rounded-full bg-[#feb95f] flex items-center justify-center">
+                <span className="material-symbols-outlined text-[#472a00] text-[18px]">person</span>
+              </div>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main style={{ maxWidth: 1320, margin: '24px auto', padding: '0 20px' }}>
+      {/* MAIN CONTAINER */}
+      <div className="flex pt-16 min-h-screen">
         
-        {/* Navigation Tabs Bar */}
-        <div style={{ display: 'flex', gap: 6, borderBottom: '1px solid #1f293d', paddingBottom: 12, marginBottom: 24, overflowX: 'auto' }}>
-          
-          <button 
-            onClick={() => setActiveTab('slitting')}
-            style={{ 
-              padding: '10px 18px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 8,
-              background: activeTab === 'slitting' ? '#1c253b' : '#111726', 
-              borderColor: activeTab === 'slitting' ? '#c88a35' : '#1f293d', 
-              color: activeTab === 'slitting' ? '#f8fafc' : '#94a3b8'
-            }}
-          >
-            <Scissors size={16} color={activeTab === 'slitting' ? '#c88a35' : '#94a3b8'} />
-            حاسبة تقطيع الرولات وميزان الكتلة
-          </button>
+        {/* RIGHT SIDEBAR (Industrial Navigation) */}
+        <aside className="w-72 bg-[#0b0e15] border-l border-[#32353d]/40 flex flex-col justify-between shrink-0 z-40 fixed right-0 top-16 bottom-0">
+          <div className="py-3">
+            <div className="px-5 mb-3">
+              <span className="text-[10px] text-[#9e8e7e] tracking-widest font-mono uppercase block">وحدات التشغيل والتحكم INDUSTRIAL GATES</span>
+            </div>
 
-          <button 
-            onClick={() => setActiveTab('genealogy')}
-            style={{ 
-              padding: '10px 18px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 8,
-              background: activeTab === 'genealogy' ? '#1c253b' : '#111726', 
-              borderColor: activeTab === 'genealogy' ? '#c88a35' : '#1f293d', 
-              color: activeTab === 'genealogy' ? '#f8fafc' : '#94a3b8'
-            }}
-          >
-            <QrCode size={16} color={activeTab === 'genealogy' ? '#c88a35' : '#94a3b8'} />
-            شجرة تتبع الرول والباركود
-          </button>
+            <nav className="space-y-1 px-2 font-sans">
+              {/* Tab 1 */}
+              <button
+                onClick={() => setActiveTab('operational-cockpit')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 transition-colors border-r-2 ${
+                  activeTab === 'operational-cockpit'
+                    ? 'bg-[#c88a35] text-[#452900] border-[#feb95f] font-bold'
+                    : 'text-[#d6c3b2] hover:bg-[#1d1f27] hover:text-[#e1e2ec] border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px]">grid_view</span>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[13px]">نظرة عامة على صالة الإنتاج</span>
+                    <span className="text-[9px] opacity-75 font-mono uppercase">Operational Cockpit</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-[#4edea3]">ONLINE</span>
+              </button>
 
-          <button 
-            onClick={() => setActiveTab('qc')}
-            style={{ 
-              padding: '10px 18px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 8,
-              background: activeTab === 'qc' ? '#1c253b' : '#111726', 
-              borderColor: activeTab === 'qc' ? '#c88a35' : '#1f293d', 
-              color: activeTab === 'qc' ? '#f8fafc' : '#94a3b8'
-            }}
-          >
-            <ShieldCheck size={16} color={activeTab === 'qc' ? '#c88a35' : '#94a3b8'} />
-            محطة فحص الجودة ومختبر القياس
-          </button>
+              {/* Tab 2 */}
+              <button
+                onClick={() => setActiveTab('deckle-calculator')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 transition-colors border-r-2 ${
+                  activeTab === 'deckle-calculator'
+                    ? 'bg-[#c88a35] text-[#452900] border-[#feb95f] font-bold'
+                    : 'text-[#d6c3b2] hover:bg-[#1d1f27] hover:text-[#e1e2ec] border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px]">straighten</span>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[13px]">حاسبة تقطيع الرولات</span>
+                    <span className="text-[9px] opacity-75 font-mono uppercase">Deckle Calculator</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono opacity-80">v4.2</span>
+              </button>
 
-          <button 
-            onClick={() => setActiveTab('ledger')}
-            style={{ 
-              padding: '10px 18px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 8,
-              background: activeTab === 'ledger' ? '#1c253b' : '#111726', 
-              borderColor: activeTab === 'ledger' ? '#c88a35' : '#1f293d', 
-              color: activeTab === 'ledger' ? '#f8fafc' : '#94a3b8'
-            }}
-          >
-            <ArrowLeftRight size={16} color={activeTab === 'ledger' ? '#c88a35' : '#94a3b8'} />
-            سجل حركات المخزون المزدوج
-          </button>
+              {/* Tab 3 */}
+              <button
+                onClick={() => setActiveTab('roll-genealogy')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 transition-colors border-r-2 ${
+                  activeTab === 'roll-genealogy'
+                    ? 'bg-[#c88a35] text-[#452900] border-[#feb95f] font-bold'
+                    : 'text-[#d6c3b2] hover:bg-[#1d1f27] hover:text-[#e1e2ec] border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px]">account_tree</span>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[13px]">شجرة نسب الرول</span>
+                    <span className="text-[9px] opacity-75 font-mono uppercase">Roll Genealogy</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono opacity-80">PARENT</span>
+              </button>
 
-          <button 
-            onClick={() => setActiveTab('network')}
-            style={{ 
-              padding: '10px 18px', borderRadius: 6, border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 8,
-              background: activeTab === 'network' ? '#1c253b' : '#111726', 
-              borderColor: activeTab === 'network' ? '#c88a35' : '#1f293d', 
-              color: activeTab === 'network' ? '#f8fafc' : '#94a3b8'
-            }}
-          >
-            <HardDrive size={16} color={activeTab === 'network' ? '#c88a35' : '#94a3b8'} />
-            إعدادات السيرفر والشبكة
-          </button>
-        </div>
+              {/* Tab 4 */}
+              <button
+                onClick={() => setActiveTab('qc-laboratory-gate')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 transition-colors border-r-2 ${
+                  activeTab === 'qc-laboratory-gate'
+                    ? 'bg-[#c88a35] text-[#452900] border-[#feb95f] font-bold'
+                    : 'text-[#d6c3b2] hover:bg-[#1d1f27] hover:text-[#e1e2ec] border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px]">biotech</span>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[13px]">مختبر فحص الجودة</span>
+                    <span className="text-[9px] opacity-75 font-mono uppercase">QC Laboratory Gate</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-[#4edea3]">ISO 187</span>
+              </button>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* TAB 1: SLITTING & MASS BALANCE CALCULATOR */}
-        {/* ---------------------------------------------------------------- */}
-        {activeTab === 'slitting' && (
-          <div>
-            {/* Top Metrics Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 24 }}>
-              
-              <div style={{ background: '#111726', borderRadius: 8, padding: 18, border: '1px solid #1f293d' }}>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>رول الجامبو قيد التقطيع (Mother Roll)</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: 4, color: '#f8fafc', fontFamily: 'JetBrains Mono, monospace' }}>JMB-2026-001</div>
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: 4 }}>
-                  عرض الشت: <strong style={{ color: '#f8fafc' }}>2,400 مم</strong> | الوزن الصافي: <strong style={{ color: '#c88a35' }}>3,000 كجم</strong>
+              {/* Tab 5 */}
+              <button
+                onClick={() => setActiveTab('thermal-label-printer')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 transition-colors border-r-2 ${
+                  activeTab === 'thermal-label-printer'
+                    ? 'bg-[#c88a35] text-[#452900] border-[#feb95f] font-bold'
+                    : 'text-[#d6c3b2] hover:bg-[#1d1f27] hover:text-[#e1e2ec] border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px]">print</span>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[13px]">طباعة الباركود الحراري</span>
+                    <span className="text-[9px] opacity-75 font-mono uppercase">Thermal Label Printer</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono opacity-80">ZEBRA</span>
+              </button>
+
+              {/* Tab 6 */}
+              <button
+                onClick={() => setActiveTab('immutable-stock-ledger')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 transition-colors border-r-2 ${
+                  activeTab === 'immutable-stock-ledger'
+                    ? 'bg-[#c88a35] text-[#452900] border-[#feb95f] font-bold'
+                    : 'text-[#d6c3b2] hover:bg-[#1d1f27] hover:text-[#e1e2ec] border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px]">history_edu</span>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[13px]">سجل حركات المخزن</span>
+                    <span className="text-[9px] opacity-75 font-mono uppercase">Immutable Stock Ledger</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono opacity-80">AUDIT</span>
+              </button>
+
+              {/* Tab 7 */}
+              <button
+                onClick={() => setActiveTab('rugged-tablet')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 transition-colors border-r-2 ${
+                  activeTab === 'rugged-tablet'
+                    ? 'bg-[#c88a35] text-[#452900] border-[#feb95f] font-bold'
+                    : 'text-[#d6c3b2] hover:bg-[#1d1f27] hover:text-[#e1e2ec] border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px]">tablet_android</span>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[13px]">شاشة التابلت الصناعي</span>
+                    <span className="text-[9px] opacity-75 font-mono uppercase">Rugged Floor Tablet</span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-[#feb95f]">TOUCH</span>
+              </button>
+            </nav>
+          </div>
+
+          {/* Bottom Machine Telemetry Sidebar Widget */}
+          <div className="p-4 bg-[#191b23] border-t border-[#32353d]/40">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[#d6c3b2] mb-1.5">
+              <span>REEL STAND PM1 SPEED</span>
+              <span className="text-[#feb95f] font-bold">1,240 M/MIN</span>
+            </div>
+            <div className="w-full bg-[#10131a] h-2 overflow-hidden border border-[#32353d]/40">
+              <div className="bg-[#c88a35] h-full w-[82%]"></div>
+            </div>
+            <div className="flex items-center justify-between mt-2 text-[#9e8e7e] font-mono text-[10px]">
+              <span>BASIS WT: 150 GSM</span>
+              <span className="text-[#4edea3]">SLIT EFFICIENCY: 99.4%</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* CONTENT AREA (Offset by sidebar width 288px on right) */}
+        <main className="flex-1 mr-72 p-6 overflow-y-auto">
+
+          {/* TAB 1: OPERATIONAL COCKPIT */}
+          {activeTab === 'operational-cockpit' && (
+            <div className="space-y-6">
+              {/* Context Header Bar */}
+              <div className="bg-[#0b0e15] p-4 border border-[#32353d]/40 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-[#4edea3]"></div>
+                  <div>
+                    <h1 className="text-[18px] font-bold text-[#feb95f]">صالة الإنتاج الرئيسية PM1 • وحدة التحكّم التنفيذي</h1>
+                    <span className="text-[10px] font-mono text-[#bec6de] tracking-wider">EXECUTIVE OPERATIONAL COCKPIT • MILL SHIFT A</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 font-mono text-xs">
+                  <div className="bg-[#1d1f27] px-3 py-1.5 border border-[#32353d]">
+                    <span className="text-[#9e8e7e]">سرعة السحب: </span>
+                    <span className="text-[#feb95f] font-bold">850 م/دقيقة</span>
+                  </div>
+                  <div className="bg-[#1d1f27] px-3 py-1.5 border border-[#32353d]">
+                    <span className="text-[#9e8e7e]">عرض الماكينة: </span>
+                    <span className="text-[#e1e2ec] font-bold">2400 مم</span>
+                  </div>
+                  <div className="bg-[#1d1f27] px-3 py-1.5 border border-[#32353d]">
+                    <span className="text-[#9e8e7e]">صنف الورق: </span>
+                    <span className="text-[#4edea3] font-bold">150 GSM KRAFT</span>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ background: '#111726', borderRadius: 8, padding: 18, border: '1px solid #1f293d' }}>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>مجموع عروض السكاكين (Deckle Cut)</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: 4, color: isWidthExceeded ? '#ef4444' : '#10b981', fontFamily: 'JetBrains Mono, monospace' }}>
-                  {totalCutWidth.toLocaleString()} مم
+              {/* KPI Metrics Ribbon */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Metric 1 */}
+                <div className="bg-[#0b0e15] p-4 border border-[#32353d]/40 flex flex-col justify-between">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <span className="text-xs text-[#e1e2ec]">إجمالي الإنتاج اليومي</span>
+                      <span className="block text-[9px] font-mono text-[#94a3b8]">DAILY GROSS TONNAGE</span>
+                    </div>
+                    <span className="text-[10px] font-mono bg-[#4edea3]/10 text-[#4edea3] px-1.5 py-0.5 border border-[#4edea3]/30">+4.8% ↑</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-2 font-mono">
+                    <span className="text-3xl font-bold text-[#feb95f]">142.500</span>
+                    <span className="text-xs text-[#94a3b8]">طن متري / MT</span>
+                  </div>
+                  <div className="w-full bg-[#1d1f27] h-1.5 mb-2">
+                    <div className="bg-[#c88a35] h-full w-[88%]"></div>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#94a3b8]">المستهدف اليومي: 136.000 طن</span>
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: 4 }}>
-                  هالك الحواف الفعلي: <strong style={{ color: '#f8fafc' }}>{trimWasteMm} مم</strong> ({((trimWasteMm / jumboDeckleWidth) * 100).toFixed(1)}%)
+
+                {/* Metric 2 */}
+                <div className="bg-[#0b0e15] p-4 border border-[#32353d]/40 flex flex-col justify-between">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <span className="text-xs text-[#e1e2ec]">رولات الجامبو النشطة</span>
+                      <span className="block text-[9px] font-mono text-[#94a3b8]">ACTIVE POPE JUMBO REELS</span>
+                    </div>
+                    <span className="text-[10px] font-mono bg-[#feb95f]/10 text-[#feb95f] px-1.5 py-0.5 border border-[#feb95f]/30">POPE-PM1</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-2 font-mono">
+                    <span className="text-3xl font-bold text-[#e1e2ec]">{jumbos.length}</span>
+                    <span className="text-xs text-[#94a3b8]">رول جاهز للتقطيع</span>
+                  </div>
+                  <div className="w-full bg-[#1d1f27] h-1.5 mb-2">
+                    <div className="bg-[#4edea3] h-full w-[75%]"></div>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#94a3b8]">إجمالي الكتلة: 36,450 كجم</span>
+                </div>
+
+                {/* Metric 3 */}
+                <div className="bg-[#0b0e15] p-4 border border-[#32353d]/40 flex flex-col justify-between">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <span className="text-xs text-[#e1e2ec]">نسبة الهالك والتشذيب</span>
+                      <span className="block text-[9px] font-mono text-[#94a3b8]">TRIM &amp; SCRAP RATIO</span>
+                    </div>
+                    <span className="text-[10px] font-mono bg-[#4edea3]/10 text-[#4edea3] px-1.5 py-0.5 border border-[#4edea3]/30">OPTIMAL</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-2 font-mono">
+                    <span className="text-3xl font-bold text-[#4edea3]">2.18%</span>
+                    <span className="text-xs text-[#94a3b8]">أقل من 3.0%</span>
+                  </div>
+                  <div className="w-full bg-[#1d1f27] h-1.5 mb-2">
+                    <div className="bg-[#4edea3] h-full w-[28%]"></div>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#94a3b8]">وفر مادي: 680 كجم / الوردية</span>
+                </div>
+
+                {/* Metric 4 */}
+                <div className="bg-[#0b0e15] p-4 border border-[#32353d]/40 flex flex-col justify-between">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <span className="text-xs text-[#e1e2ec]">كفاءة خطوط التقطيع OEE</span>
+                      <span className="block text-[9px] font-mono text-[#94a3b8]">SLITTING LINES OVERALL OEE</span>
+                    </div>
+                    <span className="text-[10px] font-mono bg-[#feb95f]/10 text-[#feb95f] px-1.5 py-0.5 border border-[#feb95f]/30">SHIFT A</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-2 font-mono">
+                    <span className="text-3xl font-bold text-[#feb95f]">94.2%</span>
+                    <span className="text-xs text-[#94a3b8]">جاهزية السكاكين</span>
+                  </div>
+                  <div className="w-full bg-[#1d1f27] h-1.5 mb-2">
+                    <div className="bg-[#c88a35] h-full w-[94%]"></div>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#94a3b8]">محطة السكاكين SLT-04 تعمل</span>
                 </div>
               </div>
 
-              <div style={{ background: '#111726', borderRadius: 8, padding: 18, border: '1px solid #1f293d' }}>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>ميزان الكتلة والمطابقة (Mass Balance)</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: 4, color: isVarianceExceeded ? '#ef4444' : '#10b981', fontFamily: 'JetBrains Mono, monospace' }}>
-                  {massBalanceVariance >= 0 ? `+${massBalanceVariance}` : massBalanceVariance} كجم
+              {/* Active Jumbos Table */}
+              <div className="bg-[#0b0e15] border border-[#32353d]/40 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#feb95f] text-[20px]">album</span>
+                    <h2 className="text-base font-bold text-[#e1e2ec]">رولات الجامبو المنتجة من خط الورق (Jumbo Mother Reels)</h2>
+                  </div>
+                  <button 
+                    onClick={() => setActiveTab('deckle-calculator')}
+                    className="px-3 py-1.5 bg-[#c88a35] hover:bg-[#feb95f] text-[#452900] text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">content_cut</span>
+                    <span>بدء أمر تقطيع جديد</span>
+                  </button>
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: 4 }}>
-                  نسبة التفاوت الميزانية: <strong>{((Math.abs(massBalanceVariance) / jumboNetWeight) * 100).toFixed(2)}%</strong> (الحد الأقصى 1.0%)
-                </div>
-              </div>
 
-              <div style={{ background: '#111726', borderRadius: 8, padding: 18, border: '1px solid #1f293d' }}>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>عدد الرولات الناتجة (Child Rolls)</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: 4, color: '#f8fafc', fontFamily: 'JetBrains Mono, monospace' }}>
-                  {cuts.length} رولات فرعية
-                </div>
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: 4 }}>
-                  الوزن الإجمالي للرولات: <strong style={{ color: '#f8fafc' }}>{totalChildWeight.toLocaleString()} كجم</strong>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-[#32353d]/60 text-[#9e8e7e] font-mono text-[11px]">
+                        <th className="py-2.5 px-3">سيريال الرول الأم</th>
+                        <th className="py-2.5 px-3">صنف الورق</th>
+                        <th className="py-2.5 px-3">الكراماج (GSM)</th>
+                        <th className="py-2.5 px-3">عرض الديكل (مم)</th>
+                        <th className="py-2.5 px-3">الوزن الصافي (كجم)</th>
+                        <th className="py-2.5 px-3">الماكينة</th>
+                        <th className="py-2.5 px-3">الحالة</th>
+                        <th className="py-2.5 px-3">الإجراء</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#32353d]/30 font-mono">
+                      {jumbos.map((j) => (
+                        <tr key={j.id} className="hover:bg-[#191b23] transition-colors">
+                          <td className="py-3 px-3 text-[#feb95f] font-bold">{j.serialNumber}</td>
+                          <td className="py-3 px-3 font-sans text-[#e1e2ec]">{j.grade}</td>
+                          <td className="py-3 px-3">{j.targetGsm} GSM</td>
+                          <td className="py-3 px-3 font-bold">{j.deckleWidthMm} مم</td>
+                          <td className="py-3 px-3 text-[#4edea3] font-bold">{j.netWeightKg.toLocaleString()} كجم</td>
+                          <td className="py-3 px-3 font-sans text-[#d6c3b2]">{j.machineId}</td>
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/30 text-[10px]">
+                              {j.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <button
+                              onClick={() => {
+                                setSelectedJumbo(j);
+                                setActiveTab('deckle-calculator');
+                              }}
+                              className="px-2.5 py-1 bg-[#1d1f27] hover:bg-[#c88a35] hover:text-[#452900] text-[#feb95f] border border-[#32353d] transition-colors font-sans text-[11px]"
+                            >
+                              تحميل للمقص
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Interactive Visual Deckle Diagram */}
-            <div style={{ background: '#111726', borderRadius: 8, padding: 20, border: '1px solid #1f293d', marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Scissors size={18} color="#c88a35" />
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>مخطط وضع سكاكين المقص الآلي (Visual Deckle Layout)</h3>
+          {/* TAB 2: DECKLE CALCULATOR */}
+          {activeTab === 'deckle-calculator' && (
+            <div className="space-y-6">
+              {/* Header Bar */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#32353d]/40">
+                <div>
+                  <div className="flex items-center gap-2 text-[#9e8e7e] font-mono text-xs uppercase tracking-wider mb-1">
+                    <span>وحدة التقطيع والتشذيب SLITTING &amp; REWINDING</span>
+                    <span>•</span>
+                    <span className="text-[#feb95f]">DECKLE RUN MATRIX</span>
+                  </div>
+                  <h1 className="text-xl font-bold text-[#e1e2ec]">حاسبة تقطيع الرولات وميزان الكتلة الرياضي</h1>
                 </div>
-                <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontFamily: 'JetBrains Mono, monospace' }}>عرض الدرفيل الكامل: 2400 mm</span>
+
+                <div className="flex items-center gap-3 font-mono text-xs">
+                  <div className="px-3 py-1.5 bg-[#191b23] border border-[#32353d]">
+                    <span className="text-[#9e8e7e]">سرعة السكاكين: </span>
+                    <span className="text-[#feb95f] font-bold">1,450 م/دقيقة</span>
+                  </div>
+                  <div className="px-3 py-1.5 bg-[#191b23] border border-[#32353d]">
+                    <span className="text-[#9e8e7e]">ضغط الشد: </span>
+                    <span className="text-[#e1e2ec] font-bold">4.85 بار</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Progress bar representing deckle */}
-              <div style={{ width: '100%', height: 42, background: '#090d16', borderRadius: 6, display: 'flex', overflow: 'hidden', border: '1px solid #1f293d' }}>
-                {cuts.map((c, idx) => {
-                  const widthPercent = (c.widthMm / jumboDeckleWidth) * 100;
-                  const colors = ['#1d4ed8', '#0284c7', '#0f766e', '#b45309', '#6d28d9'];
-                  return (
-                    <div 
-                      key={c.id} 
-                      style={{ 
-                        width: `${widthPercent}%`, 
-                        background: colors[idx % colors.length], 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        color: '#ffffff', 
-                        fontSize: '0.75rem', 
-                        fontWeight: 700,
-                        borderLeft: '1px solid rgba(255,255,255,0.2)',
-                        fontFamily: 'JetBrains Mono, monospace'
-                      }}
-                      title={`سكينة #${c.sequence}: ${c.widthMm} مم`}
-                    >
-                      {c.widthMm >= 300 ? `#${c.sequence} (${c.widthMm}mm)` : `${c.widthMm}`}
+              {/* Selected Jumbo Info Card */}
+              <div className="bg-[#191b23] border border-[#32353d]/40 p-4">
+                <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-[#272a32] border border-[#feb95f]/40 flex flex-col items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[#feb95f] text-[24px]">album</span>
                     </div>
-                  );
-                })}
-                {trimWasteMm > 0 && (
-                  <div 
-                    style={{ 
-                      width: `${(trimWasteMm / jumboDeckleWidth) * 100}%`, 
-                      background: '#7f1d1d', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      color: '#fca5a5', 
-                      fontSize: '0.7rem', 
-                      fontWeight: 700,
-                      fontFamily: 'JetBrains Mono, monospace'
-                    }}
-                    title={`هالك حواف الشت: ${trimWasteMm} مم`}
-                  >
-                    هالك ({trimWasteMm}mm)
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-[#9e8e7e]">الرول الأم المحمل على المقص</span>
+                        <span className="px-1.5 py-0.2 bg-[#4edea3]/10 text-[#4edea3] font-mono text-[10px] border border-[#4edea3]/30">LOCKED &amp; READY</span>
+                      </div>
+                      <div className="text-lg font-bold text-[#feb95f] font-mono">{selectedJumbo?.serialNumber || 'JMB-2026-088'}</div>
+                      <div className="text-xs text-[#d6c3b2]">
+                        الصنف: <strong className="text-[#e1e2ec]">{selectedJumbo?.grade || 'Testliner Grade-A'}</strong> (150 GSM)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs bg-[#0b0e15] p-3 border border-[#32353d]/40">
+                    <div className="p-2 border-r-2 border-[#feb95f]">
+                      <span className="text-[9px] text-[#9e8e7e] block">عرض الديكل الصافي</span>
+                      <span className="text-lg font-bold text-[#feb95f]">{currentJumboWidth}</span> <span className="text-[10px] text-[#94a3b8]">مم</span>
+                    </div>
+                    <div className="p-2">
+                      <span className="text-[9px] text-[#9e8e7e] block">الوزن الإجمالي</span>
+                      <span className="text-lg font-bold text-[#e1e2ec]">{selectedJumbo ? selectedJumbo.grossWeightKg : 3002}</span> <span className="text-[10px] text-[#94a3b8]">كجم</span>
+                    </div>
+                    <div className="p-2">
+                      <span className="text-[9px] text-[#9e8e7e] block">ماسورة اللف (Core)</span>
+                      <span className="text-lg font-bold text-[#e1e2ec]">76 مم</span>
+                    </div>
+                    <div className="p-2 bg-[#c88a35]/10">
+                      <span className="text-[9px] text-[#feb95f] block font-bold">الوزن الصافي المتاح</span>
+                      <span className="text-lg font-bold text-[#4edea3]">{currentJumboNetWeight.toLocaleString()}</span> <span className="text-[10px] text-[#94a3b8]">كجم</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* VISUAL DECKLE CUT BAR */}
+              <div className="bg-[#0b0e15] border border-[#32353d]/40 p-5">
+                <div className="flex items-center justify-between mb-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#feb95f] text-[18px]">straighten</span>
+                    <span className="font-bold">المخطط التفاعلي لتوزيع سكاكين التقطيع (Visual Knife Deckle Span)</span>
+                  </div>
+                  <div className="font-mono text-xs">
+                    <span>الإجمالي المستخدم: </span>
+                    <span className={`font-bold ${isWidthExceeded ? 'text-[#ffb4ab]' : 'text-[#4edea3]'}`}>{totalCutsWidth} مم</span>
+                    <span className="text-[#9e8e7e]"> / {currentJumboWidth} مم</span>
+                  </div>
+                </div>
+
+                {/* Progress Visual Bar */}
+                <div className="w-full h-12 bg-[#1d1f27] border border-[#32353d] flex overflow-hidden p-1 gap-1">
+                  {cuts.map((c, idx) => {
+                    const widthPct = (c.widthMm / currentJumboWidth) * 100;
+                    return (
+                      <div
+                        key={c.id}
+                        style={{ width: `${widthPct}%` }}
+                        className="bg-[#c88a35] hover:bg-[#feb95f] transition-colors flex flex-col items-center justify-center text-[#452900] font-mono text-[11px] font-bold overflow-hidden cursor-pointer shadow-sm"
+                        title={`سكين ${idx + 1}: ${c.widthMm} مم (${c.netWeightKg} كجم)`}
+                      >
+                        <span>{c.widthMm} مم</span>
+                        <span className="text-[9px] opacity-80">{c.netWeightKg} كجم</span>
+                      </div>
+                    );
+                  })}
+                  {trimWasteMm > 0 && (
+                    <div
+                      style={{ width: `${(trimWasteMm / currentJumboWidth) * 100}%` }}
+                      className="bg-[#32353d] border-2 border-dashed border-[#9e8e7e] flex items-center justify-center text-[#9e8e7e] font-mono text-[10px] font-semibold"
+                      title={`هالك التشذيب الجانبي (Trim Waste): ${trimWasteMm} مم`}
+                    >
+                      <span>تشذيب {trimWasteMm} مم</span>
+                    </div>
+                  )}
+                </div>
+
+                {isWidthExceeded && (
+                  <div className="mt-3 p-3 bg-[#93000a]/20 border border-[#ffb4ab] text-[#ffb4ab] text-xs flex items-center gap-2 font-bold">
+                    <span className="material-symbols-outlined text-[20px]">warning</span>
+                    <span>تحذير: مجموع عرض السكاكين ({totalCutsWidth} مم) يتجاوز عرض الرول الأم ({currentJumboWidth} مم)!</span>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Slit Cuts Table & Interactive Editor */}
-            <div style={{ background: '#111726', borderRadius: 8, padding: 20, border: '1px solid #1f293d', marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>جدول أبعاد وتوليد الرولات الفرعية (Slit Cuts Specification)</h3>
-                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '2px 0 0 0' }}>يمكنك تعديل عروض السكاكين أو إضافة رول جديد لحساب الميزان آنياً</p>
+              {/* Slit Cuts Configuration Table & Add Form */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* Table of cuts (col-span 2) */}
+                <div className="lg:col-span-2 bg-[#0b0e15] border border-[#32353d]/40 p-5">
+                  <h3 className="text-sm font-bold text-[#e1e2ec] mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#feb95f] text-[18px]">table_rows</span>
+                    <span>جدول مواصفات الرولات الفرعية الناتجة</span>
+                  </h3>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right text-xs">
+                      <thead>
+                        <tr className="border-b border-[#32353d]/60 text-[#9e8e7e] font-mono text-[11px]">
+                          <th className="py-2 px-3">#</th>
+                          <th className="py-2 px-3">سيريال الرول الفرعي</th>
+                          <th className="py-2 px-3">العرض (مم)</th>
+                          <th className="py-2 px-3">الوزن المحسوب</th>
+                          <th className="py-2 px-3">الماسورة</th>
+                          <th className="py-2 px-3">العميل المستهدف</th>
+                          <th className="py-2 px-3">حذف</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#32353d]/30 font-mono">
+                        {cuts.map((c, index) => (
+                          <tr key={c.id} className="hover:bg-[#191b23]">
+                            <td className="py-2.5 px-3 font-bold">{index + 1}</td>
+                            <td className="py-2.5 px-3 text-[#feb95f] font-bold">{c.serialNumber}</td>
+                            <td className="py-2.5 px-3 font-bold text-[#e1e2ec]">{c.widthMm} مم</td>
+                            <td className="py-2.5 px-3 text-[#4edea3] font-bold">{c.netWeightKg} كجم</td>
+                            <td className="py-2.5 px-3">{c.coreMm} مم</td>
+                            <td className="py-2.5 px-3 font-sans text-[#d6c3b2]">{c.customer || 'غير محدد'}</td>
+                            <td className="py-2.5 px-3">
+                              <button
+                                onClick={() => handleDeleteCut(c.id)}
+                                className="w-7 h-7 bg-[#93000a]/20 hover:bg-[#93000a] text-[#ffb4ab] flex items-center justify-center transition-colors"
+                                title="حذف السكين"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
 
-                <button 
-                  onClick={addCut}
-                  style={{ background: '#1a2233', border: '1px solid #2e3b55', color: '#c88a35', padding: '8px 14px', borderRadius: 6, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  <Plus size={16} />
-                  إضافة سكينة تقطيع جديدة
-                </button>
-              </div>
+                {/* Add Knife Cut & Mass Balance Box (col-span 1) */}
+                <div className="space-y-4">
+                  {/* Add knife form */}
+                  <div className="bg-[#0b0e15] border border-[#32353d]/40 p-4">
+                    <h3 className="text-xs font-bold text-[#feb95f] mb-3 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                      <span>إضافة سكين تقطيع جديدة</span>
+                    </h3>
 
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ background: '#090d16', borderBottom: '1px solid #1f293d', color: '#94a3b8' }}>
-                      <th style={{ padding: '12px 14px' }}>#</th>
-                      <th style={{ padding: '12px 14px' }}>الرقم التسلسلي الفرعي المقترح</th>
-                      <th style={{ padding: '12px 14px' }}>العرض (مم)</th>
-                      <th style={{ padding: '12px 14px' }}>الوزن الصافي التقديري (كجم)</th>
-                      <th style={{ padding: '12px 14px' }}>قطر الماسورة Core</th>
-                      <th style={{ padding: '12px 14px' }}>معاينة الملصق</th>
-                      <th style={{ padding: '12px 14px', textAlign: 'center' }}>إجراء</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cuts.map((c, index) => (
-                      <tr key={c.id} style={{ borderBottom: '1px solid #161e30' }}>
-                        <td style={{ padding: '12px 14px', fontWeight: 700 }}>{index + 1}</td>
-                        <td style={{ padding: '12px 14px', fontFamily: 'JetBrains Mono, monospace', color: '#38bdf8' }}>{c.serialNumber}</td>
-                        <td style={{ padding: '12px 14px' }}>
-                          <input 
-                            type="number" 
-                            value={c.widthMm}
-                            onChange={(e) => {
-                              const val = Math.max(50, parseInt(e.target.value) || 0);
-                              const newWeight = Math.round((val / jumboDeckleWidth) * jumboNetWeight * 0.98);
-                              setCuts(cuts.map(item => item.id === c.id ? { ...item, widthMm: val, netWeightKg: newWeight } : item));
-                            }}
-                            style={{ background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '6px 10px', borderRadius: 4, width: 90, textAlign: 'center', fontFamily: 'JetBrains Mono, monospace' }}
-                          />
-                        </td>
-                        <td style={{ padding: '12px 14px' }}>
-                          <input 
-                            type="number" 
-                            value={c.netWeightKg}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 0;
-                              setCuts(cuts.map(item => item.id === c.id ? { ...item, netWeightKg: val } : item));
-                            }}
-                            style={{ background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '6px 10px', borderRadius: 4, width: 100, textAlign: 'center', fontFamily: 'JetBrains Mono, monospace' }}
-                          />
-                        </td>
-                        <td style={{ padding: '12px 14px', color: '#94a3b8' }}>76 مم (3 بوصة)</td>
-                        <td style={{ padding: '12px 14px' }}>
-                          <button 
-                            onClick={() => openLabelPrint(c)}
-                            style={{ background: '#1a2233', border: '1px solid #28354f', color: '#94a3b8', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}
-                          >
-                            <Printer size={13} color="#c88a35" />
-                            ملصق 100x150
-                          </button>
-                        </td>
-                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                          <button 
-                            onClick={() => removeCut(c.id)}
-                            disabled={cuts.length <= 1}
-                            style={{ background: 'transparent', border: 'none', color: cuts.length <= 1 ? '#475569' : '#ef4444', cursor: cuts.length <= 1 ? 'not-allowed' : 'pointer' }}
-                            title="حذف السكينة"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-[10px] text-[#9e8e7e] block mb-1">عرض الرول المقصوص (مم)</label>
+                        <input
+                          type="number"
+                          value={newCutWidth}
+                          onChange={(e) => setNewCutWidth(Number(e.target.value))}
+                          className="w-full bg-[#191b23] border border-[#32353d] px-3 py-1.5 text-xs text-[#e1e2ec] font-mono focus:border-[#feb95f] outline-none"
+                        />
+                      </div>
 
-              {/* Trim Waste Slider & Execution Bar */}
-              <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #1f293d', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>وزن هالك الحواف المقدر (كجم):</label>
-                  <input 
-                    type="number" 
-                    value={trimWasteKg}
-                    onChange={(e) => setTrimWasteKg(parseInt(e.target.value) || 0)}
-                    style={{ background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '6px 10px', borderRadius: 4, width: 80, textAlign: 'center', fontFamily: 'JetBrains Mono, monospace' }}
-                  />
-                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>يتم إعادة تدويره في حوض الـ Pulper</span>
-                </div>
+                      <div>
+                        <label className="text-[10px] text-[#9e8e7e] block mb-1">الوزن التقديري الصافي (كجم)</label>
+                        <input
+                          type="number"
+                          value={newCutWeight}
+                          onChange={(e) => setNewCutWeight(Number(e.target.value))}
+                          className="w-full bg-[#191b23] border border-[#32353d] px-3 py-1.5 text-xs text-[#e1e2ec] font-mono focus:border-[#feb95f] outline-none"
+                        />
+                      </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {slittingSuccess && (
-                    <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 700 }}>
-                      <CheckCircle2 size={18} />
-                      تم اعتماد التقطيع الذري وتوليد الرولات بنجاح!
+                      <button
+                        onClick={handleAddCut}
+                        className="w-full py-2 bg-[#1d1f27] hover:bg-[#272a32] border border-[#feb95f] text-[#feb95f] text-xs font-bold transition-colors flex items-center justify-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">add</span>
+                        <span>إدراج في مصفوفة السكاكين</span>
+                      </button>
                     </div>
-                  )}
+                  </div>
 
-                  <button 
-                    onClick={executeSlitting}
-                    disabled={executingCut || isWidthExceeded || isVarianceExceeded}
-                    style={{ 
-                      background: (isWidthExceeded || isVarianceExceeded) ? '#1f293d' : '#c88a35', 
-                      color: (isWidthExceeded || isVarianceExceeded) ? '#64748b' : '#090d16', 
-                      border: 'none', 
-                      padding: '10px 24px', 
-                      borderRadius: 6, 
-                      fontWeight: 800, 
-                      fontSize: '0.9rem', 
-                      cursor: (isWidthExceeded || isVarianceExceeded) ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8
-                    }}
-                  >
-                    <CheckCircle size={18} />
-                    {executingCut ? 'جاري قفل المعاملة ACID...' : 'اعتماد التقطيع الذري وتوليد الرولات'}
+                  {/* Mass Balance Box */}
+                  <div className="bg-[#0b0e15] border border-[#32353d]/40 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-[#e1e2ec]">ميزان الكتلة الرياضي</span>
+                      <span className={`px-2 py-0.5 text-[10px] font-mono border ${isMassBalanceValid ? 'bg-[#4edea3]/10 text-[#4edea3] border-[#4edea3]/30' : 'bg-[#93000a]/20 text-[#ffb4ab] border-[#ffb4ab]/40'}`}>
+                        {isMassBalanceValid ? 'MATHEMATICALLY VERIFIED' : 'VARIANCE BREACH'}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] font-mono space-y-1 text-[#d6c3b2]">
+                      <div className="flex justify-between">
+                        <span>وزن الجامبو الصافي:</span>
+                        <span className="text-[#feb95f]">{currentJumboNetWeight} كجم</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>مجموع وزن الرولات:</span>
+                        <span className="text-[#e1e2ec]">{totalChildWeight} كجم</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>هالك التشذيب (Trim):</span>
+                        <input 
+                          type="number" 
+                          value={trimWasteKg} 
+                          onChange={(e) => setTrimWasteKg(Number(e.target.value))}
+                          className="w-16 bg-[#191b23] border border-[#32353d] px-1 text-left text-xs font-mono text-[#e1e2ec]"
+                        />
+                      </div>
+                      <div className="flex justify-between border-t border-[#32353d]/40 pt-1 font-bold">
+                        <span>فارق الميزان (Variance):</span>
+                        <span className={isMassBalanceValid ? 'text-[#4edea3]' : 'text-[#ffb4ab]'}>
+                          {massBalanceVarianceKg.toFixed(1)} كجم ({massBalanceVariancePct.toFixed(2)}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      disabled={executingSlit || isWidthExceeded}
+                      onClick={handleExecuteSlitting}
+                      className="w-full mt-4 py-2.5 bg-[#c88a35] hover:bg-[#feb95f] text-[#452900] text-xs font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">verified</span>
+                      <span>{executingSlit ? 'جاري تنفيذ العملية...' : 'تنفيذ أمر التقطيع وتوليد الرولات'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: ROLL GENEALOGY */}
+          {activeTab === 'roll-genealogy' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#32353d]/40">
+                <div>
+                  <h1 className="text-xl font-bold text-[#e1e2ec]">شجرة نسب الرول وتتبع المصدر (Roll Genealogy Tree)</h1>
+                  <span className="text-xs text-[#9e8e7e]">تتبع فيزيائي كامل من الرول الأم وحتى الرولات الفرعية والمستودعات</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={genealogySearch}
+                    onChange={(e) => setGenealogySearch(e.target.value)}
+                    placeholder="ابحث برقم السيريال أو الباركود..."
+                    className="bg-[#191b23] border border-[#32353d] px-3 py-1.5 text-xs text-[#e1e2ec] font-mono outline-none w-64"
+                  />
+                  <button className="px-3 py-1.5 bg-[#c88a35] text-[#452900] text-xs font-bold flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px]">search</span>
+                    <span>فحص النسب</span>
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* ---------------------------------------------------------------- */}
-        {/* TAB 2: ROLL GENEALOGY & TRACEABILITY */}
-        {/* ---------------------------------------------------------------- */}
-        {activeTab === 'genealogy' && (
-          <div>
-            <div style={{ background: '#111726', borderRadius: 8, padding: 20, border: '1px solid #1f293d', marginBottom: 24 }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-                <div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>شجرة تتبع ونسب الرول (Parent-Child Roll Genealogy Tree)</h3>
-                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '2px 0 0 0' }}>تتبع كامل من رول الجامبو حتى الرول المقصوص وموقع التخزين بالمستودع</p>
-                </div>
-
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ position: 'relative' }}>
-                    <Search size={16} color="#94a3b8" style={{ position: 'absolute', right: 10, top: 10 }} />
-                    <input 
-                      type="text" 
-                      value={searchSerial}
-                      onChange={e => setSearchSerial(e.target.value)}
-                      placeholder="بحث برقم السيريال أو الباركود..."
-                      style={{ background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '8px 36px 8px 12px', borderRadius: 6, fontSize: '0.85rem', width: 260, outline: 'none', fontFamily: 'JetBrains Mono, monospace' }}
-                    />
+              {/* Tree Diagram Visualizer */}
+              <div className="bg-[#0b0e15] border border-[#32353d]/40 p-8 flex flex-col items-center">
+                {/* Mother Roll Node */}
+                <div className="bg-[#191b23] border-2 border-[#feb95f] p-4 w-96 text-center shadow-xl relative">
+                  <div className="absolute -top-3 right-4 px-2 py-0.5 bg-[#feb95f] text-[#452900] text-[9px] font-bold font-mono">
+                    MOTHER JUMBO REEL
                   </div>
-                </div>
-              </div>
-
-              {/* Genealogy Tree Visual */}
-              <div style={{ marginTop: 24, padding: '24px 16px', background: '#090d16', borderRadius: 8, border: '1px solid #1f293d' }}>
-                
-                {/* Level 1: Mother Jumbo */}
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-                  <div style={{ background: '#1a2233', border: '2px solid #c88a35', borderRadius: 8, padding: 16, width: 340, textAlign: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
-                    <div style={{ fontSize: '0.7rem', color: '#c88a35', fontWeight: 800 }}>رول الجامبو الأصلي (Mother Pope Reel)</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f8fafc', fontFamily: 'JetBrains Mono, monospace', margin: '4px 0' }}>JMB-2026-001</div>
-                    <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                      الوزن: 3,000 كجم | العرض: 2,400 مم | الجراماج: 125 جم
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: 6, fontWeight: 700 }}>
-                      الحالة: تم التقطيع بالكامل (FULLY_SLIT)
-                    </div>
+                  <div className="text-lg font-bold font-mono text-[#feb95f] mt-1">{selectedJumbo?.serialNumber || 'JMB-2026-088'}</div>
+                  <div className="text-xs text-[#e1e2ec] mt-1">صنف: {selectedJumbo?.grade || 'Testliner Grade-A'} (150 GSM)</div>
+                  <div className="flex justify-center gap-3 text-[11px] font-mono text-[#4edea3] mt-2">
+                    <span>عرض: {currentJumboWidth} مم</span>
+                    <span>•</span>
+                    <span>وزن: {currentJumboNetWeight} كجم</span>
                   </div>
                 </div>
 
-                {/* Tree Connector */}
-                <div style={{ textAlign: 'center', color: '#c88a35', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
-                  <Scissors size={14} />
-                  <span>عملية التقطيع SLIT-BATCH-001 (مقص الرولات SLIT1)</span>
+                {/* Connector Line */}
+                <div className="w-0.5 h-10 bg-[#feb95f]"></div>
+
+                {/* Slitting Run Station Badge */}
+                <div className="px-4 py-1.5 bg-[#272a32] border border-[#32353d] text-xs font-mono text-[#feb95f] flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px]">content_cut</span>
+                  <span>أمر تقطيع كهروميكانيكي SLT-RUN-2026-044 (مشغل: م. أحمد محمود)</span>
                 </div>
 
-                {/* Level 2: Child Slit Rolls */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-                  {cuts.map((c) => (
-                    <div key={c.id} style={{ background: '#111726', border: '1px solid #1f293d', borderRadius: 8, padding: 16 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                        <span style={{ fontSize: '0.75rem', color: '#c88a35', fontWeight: 700 }}>رول فرعي #{c.sequence}</span>
-                        <span style={{ fontSize: '0.7rem', background: '#064e3b', color: '#6ee7b7', padding: '2px 6px', borderRadius: 4 }}>معتمد (RELEASED)</span>
-                      </div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: '#38bdf8', fontFamily: 'JetBrains Mono, monospace' }}>
-                        {c.serialNumber}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: 6 }}>
-                        العرض: <strong style={{ color: '#f8fafc' }}>{c.widthMm} مم</strong> | الوزن: <strong style={{ color: '#f8fafc' }}>{c.netWeightKg} كجم</strong>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 4 }}>
-                        الموقع: المستودع A-04 (رصة 2)
+                {/* Connector Line split */}
+                <div className="w-0.5 h-10 bg-[#feb95f]"></div>
+
+                {/* Daughter Rolls Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+                  {childRolls.map((r) => (
+                    <div key={r.id} className="bg-[#191b23] border border-[#32353d] p-4 flex flex-col justify-between hover:border-[#feb95f] transition-colors">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-[10px] font-mono text-[#feb95f]">رول فرعي #{r.sequence}</span>
+                        <span className={`px-2 py-0.5 text-[9px] font-mono border ${r.status === 'QC_PASSED' ? 'bg-[#4edea3]/10 text-[#4edea3] border-[#4edea3]/30' : 'bg-[#feb95f]/10 text-[#feb95f] border-[#feb95f]/30'}`}>
+                          {r.status}
+                        </span>
                       </div>
 
-                      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #1f293d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <button 
-                          onClick={() => openLabelPrint(c)}
-                          style={{ background: '#1a2233', border: '1px solid #28354f', color: '#c88a35', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}
-                        >
-                          <Printer size={13} />
-                          طباعة الملصق الحراري
-                        </button>
+                      <div className="text-base font-bold font-mono text-[#e1e2ec] mb-1">{r.serialNumber}</div>
+                      <div className="text-xs text-[#d6c3b2] mb-3">عرض: {r.widthMm} مم • وزن: {r.netWeightKg} كجم</div>
 
-                        <button 
-                          onClick={() => setActiveTab('qc')}
-                          style={{ background: 'transparent', border: 'none', color: '#38bdf8', fontSize: '0.75rem', cursor: 'pointer' }}
+                      <div className="text-[10px] font-mono text-[#9e8e7e] border-t border-[#32353d]/40 pt-2 flex items-center justify-between">
+                        <span>الموقع: {r.location}</span>
+                        <button
+                          onClick={() => {
+                            setSelectedLabelRollSerial(r.serialNumber);
+                            setActiveTab('thermal-label-printer');
+                          }}
+                          className="text-[#feb95f] hover:underline flex items-center gap-0.5"
                         >
-                          تقرير الفحص
+                          <span className="material-symbols-outlined text-[14px]">print</span>
+                          <span>طباعة</span>
                         </button>
                       </div>
                     </div>
@@ -982,379 +1034,872 @@ export default function App() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ---------------------------------------------------------------- */}
-        {/* TAB 3: QUALITY CONTROL LABORATORY GATE */}
-        {/* ---------------------------------------------------------------- */}
-        {activeTab === 'qc' && (
-          <div>
-            <div style={{ background: '#111726', borderRadius: 8, padding: 20, border: '1px solid #1f293d', marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          {/* TAB 4: QC LABORATORY GATE */}
+          {activeTab === 'qc-laboratory-gate' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#32353d]/40">
                 <div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>محطة فحص الجودة ومختبر القياس (QC Laboratory Gate)</h3>
-                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '2px 0 0 0' }}>تسجيل القياسات المعملية وإصدار قرار الإفراج أو الحجز للرول</p>
+                  <h1 className="text-xl font-bold text-[#e1e2ec]">مختبر فحص الجودة وتصريح الشحن (QC Laboratory Gate)</h1>
+                  <span className="text-xs text-[#9e8e7e]">اختبارات فيزيائية مخبرية دقيقة وفق معيار ISO 187 للورق والكرتون</span>
                 </div>
-                <div style={{ background: '#151d2e', border: '1px solid #222e47', padding: '6px 12px', borderRadius: 6, fontSize: '0.8rem', color: '#94a3b8', fontFamily: 'JetBrains Mono, monospace' }}>
-                  الرول المفحوص: <strong style={{ color: '#38bdf8' }}>SLT-1-JMB-2026-001</strong>
-                </div>
-              </div>
-
-              {qcSavedSuccess && (
-                <div style={{ background: '#064e3b', border: '1px solid #059669', color: '#6ee7b7', padding: '12px 16px', borderRadius: 6, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.85rem' }}>
-                  <CheckCircle2 size={18} color="#34d399" />
-                  <span>تم حفظ وتوثيق نتائج الفحص وتحديث سجل الحركة في المخزن بنجاح!</span>
-                </div>
-              )}
-
-              {/* Lab Inputs Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 24 }}>
-                
-                <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 16 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: 6 }}>الوزن النوعي الفعلي (GSM)</label>
-                  <input 
-                    type="number" 
-                    step="0.1"
-                    value={qcGsm}
-                    onChange={e => setQcGsm(parseFloat(e.target.value) || 0)}
-                    style={{ width: '100%', background: '#111726', border: '1px solid #1f293d', color: '#f8fafc', padding: '8px 12px', borderRadius: 6, fontSize: '1.1rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', outline: 'none' }}
-                  />
-                  <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 4, display: 'block' }}>المواصفة المستهدفة: 125 ± 3 جم/م²</span>
-                </div>
-
-                <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 16 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: 6 }}>نسبة الرطوبة الفاحصة (%)</label>
-                  <input 
-                    type="number" 
-                    step="0.1"
-                    value={qcMoisture}
-                    onChange={e => setQcMoisture(parseFloat(e.target.value) || 0)}
-                    style={{ width: '100%', background: '#111726', border: '1px solid #1f293d', color: '#f8fafc', padding: '8px 12px', borderRadius: 6, fontSize: '1.1rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', outline: 'none' }}
-                  />
-                  <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 4, display: 'block' }}>المدى المسموح: 6.5% - 8.5%</span>
-                </div>
-
-                <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 16 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: 6 }}>السُمك Caliper (ميكرون)</label>
-                  <input 
-                    type="number" 
-                    value={qcCaliper}
-                    onChange={e => setQcCaliper(parseInt(e.target.value) || 0)}
-                    style={{ width: '100%', background: '#111726', border: '1px solid #1f293d', color: '#f8fafc', padding: '8px 12px', borderRadius: 6, fontSize: '1.1rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', outline: 'none' }}
-                  />
-                  <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 4, display: 'block' }}>المعيار: 180 - 195 µm</span>
-                </div>
-
-                <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 16 }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: 6 }}>قوة الانفجار Mullen (kPa)</label>
-                  <input 
-                    type="number" 
-                    value={qcBurst}
-                    onChange={e => setQcBurst(parseInt(e.target.value) || 0)}
-                    style={{ width: '100%', background: '#111726', border: '1px solid #1f293d', color: '#f8fafc', padding: '8px 12px', borderRadius: 6, fontSize: '1.1rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', outline: 'none' }}
-                  />
-                  <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 4, display: 'block' }}>الحد الأدنى: 290 kPa</span>
+                <div className="px-3 py-1 bg-[#4edea3]/10 text-[#4edea3] font-mono text-xs border border-[#4edea3]/30">
+                  STANDARD: ISO 187 COMPLIANT
                 </div>
               </div>
 
-              {/* Disposition Selection */}
-              <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 18, marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: 12 }}>
-                  قرار الإفراج النهائي للرول (Disposition Decision):
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-                  
-                  <button 
-                    type="button"
-                    onClick={() => setQcDisposition('RELEASED')}
-                    style={{ 
-                      padding: 12, borderRadius: 6, border: '1px solid', cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit',
-                      background: qcDisposition === 'RELEASED' ? '#064e3b' : '#111726',
-                      borderColor: qcDisposition === 'RELEASED' ? '#059669' : '#1f293d',
-                      color: qcDisposition === 'RELEASED' ? '#6ee7b7' : '#94a3b8'
-                    }}
-                  >
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>صالح للشحن (RELEASED)</div>
-                    <div style={{ fontSize: '0.7rem', marginTop: 2 }}>مطابق للمواصفات 100%</div>
-                  </button>
-
-                  <button 
-                    type="button"
-                    onClick={() => setQcDisposition('QUARANTINE')}
-                    style={{ 
-                      padding: 12, borderRadius: 6, border: '1px solid', cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit',
-                      background: qcDisposition === 'QUARANTINE' ? '#78350f' : '#111726',
-                      borderColor: qcDisposition === 'QUARANTINE' ? '#d97706' : '#1f293d',
-                      color: qcDisposition === 'QUARANTINE' ? '#fde68a' : '#94a3b8'
-                    }}
-                  >
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>حجز معملي (QUARANTINE)</div>
-                    <div style={{ fontSize: '0.7rem', marginTop: 2 }}>إعادة اختبار الرطوبة والشد</div>
-                  </button>
-
-                  <button 
-                    type="button"
-                    onClick={() => setQcDisposition('DOWNGRADED')}
-                    style={{ 
-                      padding: 12, borderRadius: 6, border: '1px solid', cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit',
-                      background: qcDisposition === 'DOWNGRADED' ? '#1e293b' : '#111726',
-                      borderColor: qcDisposition === 'DOWNGRADED' ? '#475569' : '#1f293d',
-                      color: qcDisposition === 'DOWNGRADED' ? '#cbd5e1' : '#94a3b8'
-                    }}
-                  >
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>تخفيض رتبة (DOWNGRADED)</div>
-                    <div style={{ fontSize: '0.7rem', marginTop: 2 }}>تحويل من فلوتنج إلى تغليف خفيف</div>
-                  </button>
-
-                  <button 
-                    type="button"
-                    onClick={() => setQcDisposition('REJECTED')}
-                    style={{ 
-                      padding: 12, borderRadius: 6, border: '1px solid', cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit',
-                      background: qcDisposition === 'REJECTED' ? '#7f1d1d' : '#111726',
-                      borderColor: qcDisposition === 'REJECTED' ? '#dc2626' : '#1f293d',
-                      color: qcDisposition === 'REJECTED' ? '#fca5a5' : '#94a3b8'
-                    }}
-                  >
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>مرفوض تالف (REJECTED)</div>
-                    <div style={{ fontSize: '0.7rem', marginTop: 2 }}>إرسال لإعادة الفرم والتدوير</div>
-                  </button>
-                </div>
-              </div>
-
-              <button 
-                onClick={saveQcInspection}
-                style={{ background: '#c88a35', border: 'none', color: '#090d16', padding: '12px 24px', borderRadius: 6, fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
-              >
-                <CheckCircle size={18} />
-                توثيق شهادة الفحص وختم السجل
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ---------------------------------------------------------------- */}
-        {/* TAB 4: IMMUTABLE INVENTORY LEDGER */}
-        {/* ---------------------------------------------------------------- */}
-        {activeTab === 'ledger' && (
-          <div>
-            <div style={{ background: '#111726', borderRadius: 8, padding: 20, border: '1px solid #1f293d', marginBottom: 24 }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-                <div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>سجل حركات المخزون المزدوج (Immutable Movement Ledger)</h3>
-                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '2px 0 0 0' }}>سجل غير قابل للتعديل لكافة حركات الإنتاج، التقطيع، النقل، والصرف</p>
-                </div>
-
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <select 
-                    value={ledgerFilter}
-                    onChange={e => setLedgerFilter(e.target.value)}
-                    style={{ background: '#090d16', border: '1px solid #1f293d', color: '#f8fafc', padding: '8px 12px', borderRadius: 6, fontSize: '0.8rem', outline: 'none' }}
-                  >
-                    <option value="ALL">كافة أنواع الحركات</option>
-                    <option value="PRODUCTION_RECEIPT">ورود إنتاج (PRODUCTION_RECEIPT)</option>
-                    <option value="STATUS_CHANGE">تغيير حالة وتقطيع (STATUS_CHANGE)</option>
-                    <option value="LOCATION_TRANSFER">نقل مستودع (LOCATION_TRANSFER)</option>
-                  </select>
-
-                  <button 
-                    onClick={exportLedgerCsv}
-                    style={{ background: '#1a2233', border: '1px solid #2e3b55', color: '#c88a35', padding: '8px 14px', borderRadius: 6, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <Download size={15} />
-                    تصدير ملف CSV
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ background: '#090d16', borderBottom: '1px solid #1f293d', color: '#94a3b8' }}>
-                      <th style={{ padding: '12px 14px' }}>معرف الحركة</th>
-                      <th style={{ padding: '12px 14px' }}>رقم الرول</th>
-                      <th style={{ padding: '12px 14px' }}>نوع الرول</th>
-                      <th style={{ padding: '12px 14px' }}>نوع الحركة</th>
-                      <th style={{ padding: '12px 14px' }}>الوزن الصافي</th>
-                      <th style={{ padding: '12px 14px' }}>البيان والتفاصيل</th>
-                      <th style={{ padding: '12px 14px' }}>المسؤول</th>
-                      <th style={{ padding: '12px 14px' }}>التوقيت</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredLedger.map((row) => (
-                      <tr key={row.id} style={{ borderBottom: '1px solid #161e30' }}>
-                        <td style={{ padding: '12px 14px', fontFamily: 'JetBrains Mono, monospace', color: '#c88a35' }}>{row.id}</td>
-                        <td style={{ padding: '12px 14px', fontFamily: 'JetBrains Mono, monospace', color: '#38bdf8' }}>{row.rollSerial}</td>
-                        <td style={{ padding: '12px 14px' }}>
-                          <span style={{ fontSize: '0.75rem', background: row.rollType === 'جامبو' ? '#1e293b' : '#064e3b', color: row.rollType === 'جامبو' ? '#cbd5e1' : '#6ee7b7', padding: '2px 8px', borderRadius: 4 }}>
-                            {row.rollType}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 14px', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem' }}>{row.movementType}</td>
-                        <td style={{ padding: '12px 14px', fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>{row.netWeightKg.toLocaleString()} كجم</td>
-                        <td style={{ padding: '12px 14px', color: '#cbd5e1' }}>{row.reason}</td>
-                        <td style={{ padding: '12px 14px', color: '#94a3b8' }}>{row.actor}</td>
-                        <td style={{ padding: '12px 14px', color: '#64748b', fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace' }}>{row.timestamp}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ---------------------------------------------------------------- */}
-        {/* TAB 5: SERVER & CLOUDFLARE SETTINGS */}
-        {/* ---------------------------------------------------------------- */}
-        {activeTab === 'network' && (
-          <div>
-            <div style={{ background: '#111726', borderRadius: 8, padding: 20, border: '1px solid #1f293d', marginBottom: 24 }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 4px 0' }}>إعدادات السيرفر والربط السحابي (Cloudflare & Local LAN)</h3>
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0 0 20px 0' }}>معلومات الوصول لصالة الإنتاج والعملاء عبر الإنترنت</p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
-                
-                <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 18 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <Wifi size={20} color="#38bdf8" />
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>شبكة صالة المصنع الداخلية (Local LAN)</h4>
+              {/* QC Testing Entry Form */}
+              <div className="bg-[#0b0e15] border border-[#32353d]/40 p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                  <div>
+                    <label className="text-xs text-[#9e8e7e] block mb-1">اختر سيريال الرول المراد فحصه:</label>
+                    <select
+                      value={qcRollSerial}
+                      onChange={(e) => setQcRollSerial(e.target.value)}
+                      className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs font-mono text-[#feb95f] outline-none"
+                    >
+                      {childRolls.map((r) => (
+                        <option key={r.id} value={r.serialNumber}>
+                          {r.serialNumber} ({r.widthMm} مم - {r.netWeightKg} كجم)
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: 1.6, margin: '0 0 12px 0' }}>
-                    يمكن لجميع أجهزة التابلت وأجهزة الوزن ومقصات الرولات الدخول مباشرة عبر الآي بي الداخلي بدون إنترنت:
-                  </p>
-                  <div style={{ background: '#111726', border: '1px solid #1f293d', borderRadius: 6, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem' }}>
-                    <span style={{ color: '#38bdf8' }}>http://192.168.9.223:5173</span>
-                    <button onClick={copyLanUrl} style={{ background: '#1a2233', border: '1px solid #2e3b55', color: '#cbd5e1', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem' }}>
-                      {copiedLan ? 'تم النسخ' : 'نسخ'}
+
+                  <div>
+                    <label className="text-xs text-[#9e8e7e] block mb-1">صنف الورق المستهدف:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value="Testliner Grade-A (المستهدف: 150 GSM ± 2 GSM)"
+                      className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-[#9e8e7e] block mb-1">كبير مفتشي الجودة (Inspector):</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={currentUser ? currentUser.fullName : 'ك. مصطفى إبراهيم'}
+                      className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none font-sans"
+                    />
+                  </div>
+                </div>
+
+                {/* Scientific Parameters Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                  <div className="bg-[#191b23] border border-[#32353d] p-3">
+                    <span className="text-[10px] text-[#9e8e7e] block font-mono">الكراماج الفعلي (GSM)</span>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={qcGsm}
+                      onChange={(e) => setQcGsm(Number(e.target.value))}
+                      className="w-full bg-[#10131a] border border-[#32353d] px-2 py-1 mt-1 text-sm font-mono text-[#feb95f] font-bold"
+                    />
+                    <span className="text-[9px] text-[#4edea3] mt-1 block">ضمن النطاق المسموح</span>
+                  </div>
+
+                  <div className="bg-[#191b23] border border-[#32353d] p-3">
+                    <span className="text-[10px] text-[#9e8e7e] block font-mono">المحتوى الرطوبي (%)</span>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={qcMoisture}
+                      onChange={(e) => setQcMoisture(Number(e.target.value))}
+                      className="w-full bg-[#10131a] border border-[#32353d] px-2 py-1 mt-1 text-sm font-mono text-[#e1e2ec] font-bold"
+                    />
+                    <span className="text-[9px] text-[#9e8e7e] mt-1 block">المعيار: 6.5 - 8.5%</span>
+                  </div>
+
+                  <div className="bg-[#191b23] border border-[#32353d] p-3">
+                    <span className="text-[10px] text-[#9e8e7e] block font-mono">السُمك (Caliper Micron)</span>
+                    <input
+                      type="number"
+                      value={qcCaliper}
+                      onChange={(e) => setQcCaliper(Number(e.target.value))}
+                      className="w-full bg-[#10131a] border border-[#32353d] px-2 py-1 mt-1 text-sm font-mono text-[#e1e2ec] font-bold"
+                    />
+                    <span className="text-[9px] text-[#9e8e7e] mt-1 block">المعيار: 215 - 225 µm</span>
+                  </div>
+
+                  <div className="bg-[#191b23] border border-[#32353d] p-3">
+                    <span className="text-[10px] text-[#9e8e7e] block font-mono">قوة الانفجار (Burst kPa)</span>
+                    <input
+                      type="number"
+                      value={qcBurst}
+                      onChange={(e) => setQcBurst(Number(e.target.value))}
+                      className="w-full bg-[#10131a] border border-[#32353d] px-2 py-1 mt-1 text-sm font-mono text-[#4edea3] font-bold"
+                    />
+                    <span className="text-[9px] text-[#4edea3] mt-1 block">ممتاز &gt; 380 kPa</span>
+                  </div>
+
+                  <div className="bg-[#191b23] border border-[#32353d] p-3">
+                    <span className="text-[10px] text-[#9e8e7e] block font-mono">اختبار كوب (Cobb 60)</span>
+                    <input
+                      type="number"
+                      value={qcCobb}
+                      onChange={(e) => setQcCobb(Number(e.target.value))}
+                      className="w-full bg-[#10131a] border border-[#32353d] px-2 py-1 mt-1 text-sm font-mono text-[#e1e2ec] font-bold"
+                    />
+                    <span className="text-[9px] text-[#9e8e7e] mt-1 block">المعيار: 30 - 40 g/m²</span>
+                  </div>
+                </div>
+
+                {/* Disposition Decision Selection */}
+                <div className="mb-6">
+                  <label className="text-xs text-[#9e8e7e] block mb-2 font-bold">قرار اعتماد الرول (Quality Disposition Stamp):</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setQcDisposition('RELEASED')}
+                      className={`p-3 border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                        qcDisposition === 'RELEASED'
+                          ? 'bg-[#00ac77] text-[#002113] border-[#4edea3]'
+                          : 'bg-[#191b23] text-[#4edea3] border-[#32353d]'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">verified</span>
+                      <span>RELEASED (معتمد صالح للشحن)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setQcDisposition('QUARANTINE')}
+                      className={`p-3 border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                        qcDisposition === 'QUARANTINE'
+                          ? 'bg-[#c88a35] text-[#452900] border-[#feb95f]'
+                          : 'bg-[#191b23] text-[#feb95f] border-[#32353d]'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">gavel</span>
+                      <span>QUARANTINE (حجز وإعادة فحص)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setQcDisposition('REJECTED')}
+                      className={`p-3 border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                        qcDisposition === 'REJECTED'
+                          ? 'bg-[#93000a] text-white border-[#ffb4ab]'
+                          : 'bg-[#191b23] text-[#ffb4ab] border-[#32353d]'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">cancel</span>
+                      <span>REJECTED (مرفوض كلي تالف)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setQcDisposition('DOWNGRADED')}
+                      className={`p-3 border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                        qcDisposition === 'DOWNGRADED'
+                          ? 'bg-[#41495c] text-white border-[#bec6de]'
+                          : 'bg-[#191b23] text-[#bec6de] border-[#32353d]'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">low_priority</span>
+                      <span>DOWNGRADED (تخفيض رتبة)</span>
                     </button>
                   </div>
                 </div>
 
-                <div style={{ background: '#090d16', border: '1px solid #1f293d', borderRadius: 8, padding: 18 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <Globe size={20} color="#2dd4bf" />
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>الربط السحابي التلقائي (Cloudflare Pages)</h4>
+                <div className="mb-4">
+                  <label className="text-xs text-[#9e8e7e] block mb-1">ملاحظات وتقرير المختبر:</label>
+                  <textarea
+                    rows={2}
+                    value={qcNotes}
+                    onChange={(e) => setQcNotes(e.target.value)}
+                    className="w-full bg-[#191b23] border border-[#32353d] p-2 text-xs text-[#e1e2ec] outline-none"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveQCTest}
+                  className="px-6 py-2.5 bg-[#c88a35] hover:bg-[#feb95f] text-[#452900] text-xs font-bold flex items-center gap-2 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">save</span>
+                  <span>حفظ وتوثيق الفحص في قاعدة البيانات</span>
+                </button>
+              </div>
+
+              {/* Past QC Records Table */}
+              <div className="bg-[#0b0e15] border border-[#32353d]/40 p-5">
+                <h3 className="text-sm font-bold text-[#e1e2ec] mb-3">سجل اختبارات الجودة الموثقة</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-[#32353d]/60 text-[#9e8e7e] font-mono text-[11px]">
+                        <th className="py-2 px-3">التاريخ</th>
+                        <th className="py-2 px-3">سيريال الرول</th>
+                        <th className="py-2 px-3">الكراماج</th>
+                        <th className="py-2 px-3">الرطوبة</th>
+                        <th className="py-2 px-3">الانفجار</th>
+                        <th className="py-2 px-3">القرار</th>
+                        <th className="py-2 px-3">المفتش</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#32353d]/30 font-mono">
+                      {qcTests.map((t) => (
+                        <tr key={t.id} className="hover:bg-[#191b23]">
+                          <td className="py-2.5 px-3 text-[#9e8e7e]">{t.inspectedAt}</td>
+                          <td className="py-2.5 px-3 text-[#feb95f] font-bold">{t.rollSerial}</td>
+                          <td className="py-2.5 px-3">{t.actualGsm} GSM</td>
+                          <td className="py-2.5 px-3">{t.moisturePct}%</td>
+                          <td className="py-2.5 px-3">{t.burstKpa} kPa</td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 text-[10px] border ${t.disposition === 'RELEASED' ? 'bg-[#4edea3]/10 text-[#4edea3] border-[#4edea3]/30' : 'bg-[#feb95f]/10 text-[#feb95f] border-[#feb95f]/30'}`}>
+                              {t.disposition}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 font-sans text-[#e1e2ec]">{t.inspector}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: THERMAL LABEL PRINTER */}
+          {activeTab === 'thermal-label-printer' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#32353d]/40">
+                <div>
+                  <h1 className="text-xl font-bold text-[#e1e2ec]">محطة طباعة الباركود الحراري (Zebra Thermal Label 100x150 mm)</h1>
+                  <span className="text-xs text-[#9e8e7e]">ملصق حراري موحد للصق على ماسورة وقلب رول الورق مع باركود EAN-128</span>
+                </div>
+
+                <button
+                  onClick={() => window.print()}
+                  className="px-5 py-2 bg-[#feb95f] hover:bg-[#c88a35] text-[#452900] text-xs font-bold flex items-center gap-2 shadow-lg transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">print</span>
+                  <span>طباعة ملصق الرول الآن</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* Print Control Settings Panel */}
+                <div className="bg-[#0b0e15] border border-[#32353d]/40 p-5 space-y-4">
+                  <h3 className="text-xs font-bold text-[#feb95f] uppercase font-mono tracking-wider">إعدادات الطابعة والملصق</h3>
+
+                  <div>
+                    <label className="text-xs text-[#9e8e7e] block mb-1">اختر الرول المراد طباعته:</label>
+                    <select
+                      value={selectedLabelRollSerial}
+                      onChange={(e) => setSelectedLabelRollSerial(e.target.value)}
+                      className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs font-mono text-[#feb95f] outline-none"
+                    >
+                      {childRolls.map((r) => (
+                        <option key={r.id} value={r.serialNumber}>
+                          {r.serialNumber} ({r.widthMm} مم - {r.netWeightKg} كجم)
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: 1.6, margin: '0 0 12px 0' }}>
-                    كل عملية رفع على GitHub (Push to main) بحسابك <code style={{ color: '#c88a35' }}>mosaad20</code> تقوم بإعادة بناء الواجهة ونشرها للعميل تلقائياً على الرابط الحي.
-                  </p>
-                  <div style={{ background: '#111726', border: '1px solid #1f293d', borderRadius: 6, padding: '10px 14px', color: '#2dd4bf', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem' }}>
-                    https://papererp.pages.dev
+
+                  <div>
+                    <label className="text-xs text-[#9e8e7e] block mb-1">الطابعة الحرارية المحددة:</label>
+                    <select
+                      value={labelPrinter}
+                      onChange={(e) => setLabelPrinter(e.target.value)}
+                      className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none font-sans"
+                    >
+                      <option value="Zebra ZT411 (صالة الإنتاج PM1)">Zebra ZT411 (صالة الإنتاج PM1)</option>
+                      <option value="TSC TTP-244 Pro (محطة التقطيع SLT-04)">TSC TTP-244 Pro (محطة التقطيع SLT-04)</option>
+                      <option value="Honeywell PM43 (مستودع A)">Honeywell PM43 (مستودع A)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-[#9e8e7e] block mb-1">عدد النسخ:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={labelCopies}
+                      onChange={(e) => setLabelCopies(Number(e.target.value))}
+                      className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs font-mono text-[#e1e2ec] outline-none"
+                    />
+                  </div>
+
+                  <div className="p-3 bg-[#191b23] border border-[#32353d] text-[11px] text-[#d6c3b2] space-y-1">
+                    <div className="font-bold text-[#feb95f]">معلومات الملصق القياسي:</div>
+                    <div>• المقاس: 100 مم × 150 مم (4 × 6 بوصة)</div>
+                    <div>• التشفير: Code 128 + 2D QR Code</div>
+                    <div>• الورق: ملصق حراري عالي الالتصاق للكرتون</div>
+                  </div>
+                </div>
+
+                {/* REALISTIC 100x150 mm LABEL CANVAS */}
+                <div className="lg:col-span-2 flex justify-center bg-[#0b0e15] border border-[#32353d]/40 p-6">
+                  <div 
+                    id="thermal-label-canvas"
+                    className="w-[100mm] min-h-[148mm] bg-white text-black p-4 border-2 border-black flex flex-col justify-between shadow-2xl font-sans"
+                    style={{ direction: 'rtl' }}
+                  >
+                    {/* Header */}
+                    <div className="border-b-2 border-black pb-2 text-center">
+                      <div className="text-[14px] font-bold tracking-tight">مصنع مصر لصناعة الورق والكرتون</div>
+                      <div className="text-[10px] font-mono font-semibold tracking-wider">PAPERERP ENTERPRISE • INDUSTRIAL ROLL LABEL</div>
+                    </div>
+
+                    {/* Barcode & QR Block */}
+                    <div className="my-2 flex items-center justify-between gap-3 border-b-2 border-black pb-3">
+                      {/* Realistic SVG Barcode 128 */}
+                      <div className="flex-1 flex flex-col items-center">
+                        <svg className="w-full h-14" viewBox="0 0 240 60">
+                          {/* Generated barcode lines */}
+                          <rect x="10" y="0" width="3" height="50" fill="black" />
+                          <rect x="16" y="0" width="2" height="50" fill="black" />
+                          <rect x="22" y="0" width="5" height="50" fill="black" />
+                          <rect x="30" y="0" width="2" height="50" fill="black" />
+                          <rect x="36" y="0" width="4" height="50" fill="black" />
+                          <rect x="44" y="0" width="2" height="50" fill="black" />
+                          <rect x="50" y="0" width="6" height="50" fill="black" />
+                          <rect x="60" y="0" width="3" height="50" fill="black" />
+                          <rect x="68" y="0" width="2" height="50" fill="black" />
+                          <rect x="74" y="0" width="5" height="50" fill="black" />
+                          <rect x="83" y="0" width="3" height="50" fill="black" />
+                          <rect x="90" y="0" width="4" height="50" fill="black" />
+                          <rect x="98" y="0" width="2" height="50" fill="black" />
+                          <rect x="104" y="0" width="6" height="50" fill="black" />
+                          <rect x="114" y="0" width="3" height="50" fill="black" />
+                          <rect x="122" y="0" width="5" height="50" fill="black" />
+                          <rect x="131" y="0" width="2" height="50" fill="black" />
+                          <rect x="137" y="0" width="4" height="50" fill="black" />
+                          <rect x="145" y="0" width="6" height="50" fill="black" />
+                          <rect x="155" y="0" width="3" height="50" fill="black" />
+                          <rect x="162" y="0" width="5" height="50" fill="black" />
+                          <rect x="171" y="0" width="2" height="50" fill="black" />
+                          <rect x="177" y="0" width="6" height="50" fill="black" />
+                          <rect x="187" y="0" width="3" height="50" fill="black" />
+                          <rect x="194" y="0" width="4" height="50" fill="black" />
+                          <rect x="202" y="0" width="2" height="50" fill="black" />
+                          <rect x="208" y="0" width="5" height="50" fill="black" />
+                          <rect x="217" y="0" width="3" height="50" fill="black" />
+                          <rect x="224" y="0" width="4" height="50" fill="black" />
+                        </svg>
+                        <span className="font-mono text-[12px] font-bold tracking-widest">{activeLabelRoll.serialNumber}</span>
+                      </div>
+
+                      {/* 2D QR Code SVG */}
+                      <div className="w-16 h-16 border border-black p-1 flex items-center justify-center shrink-0">
+                        <svg className="w-full h-full" viewBox="0 0 100 100">
+                          <rect x="0" y="0" width="30" height="30" fill="black" />
+                          <rect x="5" y="5" width="20" height="20" fill="white" />
+                          <rect x="10" y="10" width="10" height="10" fill="black" />
+
+                          <rect x="70" y="0" width="30" height="30" fill="black" />
+                          <rect x="75" y="5" width="20" height="20" fill="white" />
+                          <rect x="80" y="10" width="10" height="10" fill="black" />
+
+                          <rect x="0" y="70" width="30" height="30" fill="black" />
+                          <rect x="5" y="75" width="20" height="20" fill="white" />
+                          <rect x="10" y="80" width="10" height="10" fill="black" />
+
+                          <rect x="40" y="10" width="20" height="10" fill="black" />
+                          <rect x="40" y="30" width="10" height="20" fill="black" />
+                          <rect x="60" y="40" width="20" height="10" fill="black" />
+                          <rect x="40" y="70" width="30" height="10" fill="black" />
+                          <rect x="80" y="60" width="10" height="30" fill="black" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Specifications Grid */}
+                    <div className="grid grid-cols-2 gap-2 text-xs border-b-2 border-black pb-3">
+                      <div>
+                        <span className="text-[10px] block font-semibold text-gray-700">نوع الورق:</span>
+                        <span className="font-bold text-sm">{activeLabelRoll.grade}</span>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] block font-semibold text-gray-700">الرول الأم (Parent):</span>
+                        <span className="font-mono font-bold">{activeLabelRoll.parentJumboSerial}</span>
+                      </div>
+
+                      <div className="border-t border-gray-400 pt-1">
+                        <span className="text-[10px] block font-semibold text-gray-700">عرض الرول (Width):</span>
+                        <span className="font-mono font-bold text-base">{activeLabelRoll.widthMm} mm</span>
+                      </div>
+
+                      <div className="border-t border-gray-400 pt-1">
+                        <span className="text-[10px] block font-semibold text-gray-700">الكراماج (GSM):</span>
+                        <span className="font-mono font-bold text-base">{activeLabelRoll.gsm} g/m²</span>
+                      </div>
+
+                      <div className="border-t border-gray-400 pt-1">
+                        <span className="text-[10px] block font-semibold text-gray-700">الوزن الصافي (Net Wt):</span>
+                        <span className="font-mono font-bold text-lg">{activeLabelRoll.netWeightKg} KG</span>
+                      </div>
+
+                      <div className="border-t border-gray-400 pt-1">
+                        <span className="text-[10px] block font-semibold text-gray-700">الوزن الإجمالي (Gross):</span>
+                        <span className="font-mono font-bold text-base">{activeLabelRoll.grossWeightKg} KG</span>
+                      </div>
+
+                      <div className="border-t border-gray-400 pt-1">
+                        <span className="text-[10px] block font-semibold text-gray-700">قطر الماسورة:</span>
+                        <span className="font-mono font-bold">76 mm (3")</span>
+                      </div>
+
+                      <div className="border-t border-gray-400 pt-1">
+                        <span className="text-[10px] block font-semibold text-gray-700">القطر الخارجي:</span>
+                        <span className="font-mono font-bold">{activeLabelRoll.diameterMm} mm</span>
+                      </div>
+                    </div>
+
+                    {/* Footer Stamps */}
+                    <div className="pt-2 flex items-center justify-between text-[10px]">
+                      <div>
+                        <div>المشغل: {activeLabelRoll.operatorName}</div>
+                        <div className="font-mono">تاريخ: {activeLabelRoll.createdAt}</div>
+                      </div>
+
+                      <div className="border-2 border-black px-3 py-1 font-mono font-bold text-center">
+                        <div>QC DISPOSITION</div>
+                        <div className="text-xs">{activeLabelRoll.status}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* THERMAL BARCODE LABEL MODAL (100x150 mm) */}
-      {/* ------------------------------------------------------------------ */}
-      {printModalRoll && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
-          <div style={{ background: '#ffffff', color: '#000000', width: 440, borderRadius: 8, padding: 24, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', position: 'relative', fontFamily: 'Cairo, sans-serif' }}>
-            
-            {/* Close Modal Button */}
-            <button 
-              onClick={() => setPrintModalRoll(null)}
-              style={{ position: 'absolute', top: 14, left: 14, background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          {/* TAB 6: IMMUTABLE STOCK LEDGER */}
+          {activeTab === 'immutable-stock-ledger' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#32353d]/40">
+                <div>
+                  <h1 className="text-xl font-bold text-[#e1e2ec]">سجل حركات المخزن المزدوج (Immutable Movement Ledger)</h1>
+                  <span className="text-xs text-[#9e8e7e]">سجل غير قابل للتعديل لكافة حركات الورق مع بصمات تدقيق مشفرة SHA-256</span>
+                </div>
+
+                <button
+                  onClick={() => setShowMovementModal(true)}
+                  className="px-4 py-2 bg-[#c88a35] hover:bg-[#feb95f] text-[#452900] text-xs font-bold flex items-center gap-1.5 transition-colors self-start"
+                >
+                  <span className="material-symbols-outlined text-[16px]">add_box</span>
+                  <span>تسجيل حركة مخزنية جديدة</span>
+                </button>
+              </div>
+
+              {/* Filters Bar */}
+              <div className="flex flex-wrap items-center gap-2 bg-[#0b0e15] p-3 border border-[#32353d]/40">
+                <span className="text-xs text-[#9e8e7e] ml-2">نوع الحركة:</span>
+                {['ALL', 'PRODUCTION_RECEIPT', 'STATUS_CHANGE', 'LOCATION_TRANSFER', 'DISPATCH', 'SCRAP'].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setMovementFilter(type)}
+                    className={`px-3 py-1 text-xs font-mono transition-colors border ${
+                      movementFilter === type
+                        ? 'bg-[#feb95f] text-[#452900] border-[#feb95f] font-bold'
+                        : 'bg-[#191b23] text-[#d6c3b2] border-[#32353d] hover:bg-[#272a32]'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+
+              {/* Ledger Table */}
+              <div className="bg-[#0b0e15] border border-[#32353d]/40 p-5">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-[#32353d]/60 text-[#9e8e7e] font-mono text-[11px]">
+                        <th className="py-2.5 px-3">التاريخ والوقت</th>
+                        <th className="py-2.5 px-3">سيريال الرول</th>
+                        <th className="py-2.5 px-3">النوع</th>
+                        <th className="py-2.5 px-3">نوع الحركة</th>
+                        <th className="py-2.5 px-3">الوزن الصافي</th>
+                        <th className="py-2.5 px-3">من موقع</th>
+                        <th className="py-2.5 px-3">إلى موقع</th>
+                        <th className="py-2.5 px-3">المسؤول</th>
+                        <th className="py-2.5 px-3">بصمة التدقيق</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#32353d]/30 font-mono">
+                      {filteredMovements.map((m) => (
+                        <tr key={m.id} className="hover:bg-[#191b23]">
+                          <td className="py-3 px-3 text-[#9e8e7e]">{m.timestamp}</td>
+                          <td className="py-3 px-3 text-[#feb95f] font-bold">{m.rollSerial}</td>
+                          <td className="py-3 px-3 font-sans text-[#d6c3b2]">{m.rollCategory}</td>
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/30 text-[10px]">
+                              {m.movementType}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-[#e1e2ec] font-bold">{m.netWeightKg} كجم</td>
+                          <td className="py-3 px-3 font-sans text-[#d6c3b2]">{m.fromLocation}</td>
+                          <td className="py-3 px-3 font-sans text-[#4edea3]">{m.toLocation}</td>
+                          <td className="py-3 px-3 font-sans text-[#e1e2ec]">{m.actor}</td>
+                          <td className="py-3 px-3 text-[#feb95f] font-bold">{m.auditHash}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: RUGGED TABLET CONSOLE */}
+          {activeTab === 'rugged-tablet' && (
+            <div className="space-y-6">
+              <div className="bg-[#191b23] border border-[#feb95f] p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#feb95f] text-[32px]">tablet_android</span>
+                  <div>
+                    <h1 className="text-lg font-bold text-[#feb95f]">شاشة التابلت الميداني للصالة (Rugged Tablet Floor Operator)</h1>
+                    <span className="text-xs text-[#d6c3b2]">واجهة مكبرة ومخصصة للمشغلين بالأيدي والقفازات الصناعية</span>
+                  </div>
+                </div>
+
+                <div className="px-4 py-2 bg-[#4edea3]/10 border border-[#4edea3] text-[#4edea3] font-mono text-sm font-bold">
+                  TOUCH ACTIVE
+                </div>
+              </div>
+
+              {/* Big Touch Controls Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button
+                  onClick={() => setActiveTab('deckle-calculator')}
+                  className="bg-[#0b0e15] border-2 border-[#32353d] hover:border-[#feb95f] p-6 flex flex-col items-center justify-center gap-3 transition-colors text-center group"
+                >
+                  <div className="w-16 h-16 bg-[#c88a35] group-hover:bg-[#feb95f] flex items-center justify-center text-[#452900] transition-colors">
+                    <span className="material-symbols-outlined text-[36px]">straighten</span>
+                  </div>
+                  <span className="text-lg font-bold text-[#e1e2ec]">تقطيع رول جامبو جديد</span>
+                  <span className="text-xs text-[#9e8e7e]">ضبط سكاكين التقطيع وميزان الكتلة</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('qc-laboratory-gate')}
+                  className="bg-[#0b0e15] border-2 border-[#32353d] hover:border-[#4edea3] p-6 flex flex-col items-center justify-center gap-3 transition-colors text-center group"
+                >
+                  <div className="w-16 h-16 bg-[#00ac77] group-hover:bg-[#4edea3] flex items-center justify-center text-[#002113] transition-colors">
+                    <span className="material-symbols-outlined text-[36px]">biotech</span>
+                  </div>
+                  <span className="text-lg font-bold text-[#e1e2ec]">فحص الجودة واعتماد الرول</span>
+                  <span className="text-xs text-[#9e8e7e]">إدخال الكراماج والرطوبة وقوة الشد</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('thermal-label-printer')}
+                  className="bg-[#0b0e15] border-2 border-[#32353d] hover:border-[#feb95f] p-6 flex flex-col items-center justify-center gap-3 transition-colors text-center group"
+                >
+                  <div className="w-16 h-16 bg-[#c88a35] group-hover:bg-[#feb95f] flex items-center justify-center text-[#452900] transition-colors">
+                    <span className="material-symbols-outlined text-[36px]">print</span>
+                  </div>
+                  <span className="text-lg font-bold text-[#e1e2ec]">طباعة باركود الرول الحراري</span>
+                  <span className="text-xs text-[#9e8e7e]">طابعة زيبرا ZT411 قياس 100x150 مم</span>
+                </button>
+              </div>
+
+              {/* Big Scale Metrology Display */}
+              <div className="bg-[#0b0e15] border border-[#32353d]/40 p-6 flex flex-col items-center">
+                <span className="text-xs font-mono text-[#9e8e7e] mb-2 uppercase">ميزان البسكول الآلي لصالة الإنتاج (Floor Scale G-01)</span>
+                <div className="text-6xl font-mono font-bold text-[#4edea3] tracking-wider mb-2">
+                  1,245.00 <span className="text-2xl text-[#94a3b8]">KG</span>
+                </div>
+                <span className="text-xs font-mono text-[#feb95f]">STABILIZED &bull; ZERO DRIFT TOLERANCE &bull; RFID LOCKED</span>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* MODAL 1: REGISTER & AUTHENTICATION */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0b0e15] border border-[#feb95f] w-full max-w-md p-6 shadow-2xl relative font-sans text-right">
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 left-4 text-[#9e8e7e] hover:text-white"
             >
-              <X size={16} color="#0f172a" />
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
 
-            {/* Industrial Label Layout (100x150 mm Zebra Style) */}
-            <div style={{ border: '3px solid #000000', padding: 14, textAlign: 'center' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                {currentUser.factoryName}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-[#c88a35] flex items-center justify-center text-[#452900]">
+                <span className="material-symbols-outlined text-[18px]">badge</span>
               </div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#334155', borderBottom: '2px solid #000000', paddingBottom: 6, marginBottom: 10 }}>
-                ملصق بطاقة تعريف الرول الفرعي | PAPER ROLL IDENTITY TAG
-              </div>
+              <h2 className="text-base font-bold text-[#feb95f]">تسجيل حساب مستخدم جديد في المصنع</h2>
+            </div>
 
-              {/* Barcode Graphic Representation */}
-              <div style={{ margin: '10px 0', padding: '6px 0', background: '#f8fafc', border: '1px dashed #cbd5e1' }}>
-                <svg width="280" height="48" viewBox="0 0 280 48" style={{ display: 'block', margin: '0 auto' }}>
-                  {/* Stylized high contrast Barcode lines */}
-                  {[2, 3, 1, 4, 2, 1, 3, 2, 4, 1, 2, 3, 1, 2, 4, 2, 3, 1, 4, 2, 1, 3, 1, 4, 2, 3, 1, 2, 4, 1, 3, 2, 4, 1, 2, 3, 2, 4].map((width, i) => (
-                    <rect key={i} x={i * 7 + 6} y="4" width={width} height="40" fill="#000000" />
-                  ))}
-                </svg>
-                <div style={{ fontSize: '0.9rem', fontWeight: 900, letterSpacing: 3, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-                  {printModalRoll.serialNumber}
-                </div>
-              </div>
-
-              {/* Specs Grid Table */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'right', margin: '12px 0', border: '1px solid #000000' }}>
-                <tbody>
-                  <tr style={{ borderBottom: '1px solid #000000' }}>
-                    <td style={{ padding: '4px 6px', fontWeight: 700, background: '#f1f5f9', width: '35%' }}>نوع الورق (Grade):</td>
-                    <td style={{ padding: '4px 6px', fontWeight: 800 }}>{printModalRoll.grade}</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #000000' }}>
-                    <td style={{ padding: '4px 6px', fontWeight: 700, background: '#f1f5f9' }}>عرض الرول (Width):</td>
-                    <td style={{ padding: '4px 6px', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>{printModalRoll.widthMm} mm</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #000000' }}>
-                    <td style={{ padding: '4px 6px', fontWeight: 700, background: '#f1f5f9' }}>الوزن الصافي (Net Wt):</td>
-                    <td style={{ padding: '4px 6px', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'JetBrains Mono, monospace' }}>{printModalRoll.netWeightKg} KG</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #000000' }}>
-                    <td style={{ padding: '4px 6px', fontWeight: 700, background: '#f1f5f9' }}>الوزن القائم (Gross Wt):</td>
-                    <td style={{ padding: '4px 6px', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>{printModalRoll.grossWeightKg} KG</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #000000' }}>
-                    <td style={{ padding: '4px 6px', fontWeight: 700, background: '#f1f5f9' }}>قطر الماسورة (Core):</td>
-                    <td style={{ padding: '4px 6px', fontWeight: 800 }}>{printModalRoll.coreMm} mm (3 inch)</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #000000' }}>
-                    <td style={{ padding: '4px 6px', fontWeight: 700, background: '#f1f5f9' }}>تاريخ وخطة الإنتاج:</td>
-                    <td style={{ padding: '4px 6px' }}>{printModalRoll.date} — وردية المساء</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '4px 6px', fontWeight: 700, background: '#f1f5f9' }}>اعتماد الجودة:</td>
-                    <td style={{ padding: '4px 6px', fontWeight: 800, color: '#15803d' }}>{printModalRoll.quality}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* Bottom Operator & QR Code Section */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                <div style={{ textAlign: 'right', fontSize: '0.7rem' }}>
-                  <div>المشغل المسجل: <strong>{printModalRoll.operator}</strong></div>
-                  <div>المقص: <strong>SLIT-01</strong></div>
-                </div>
-
-                <div style={{ width: 44, height: 44, border: '1px solid #000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <QrCode size={36} color="#000000" />
-                </div>
+            {/* Quick Demo Switcher */}
+            <div className="mb-5 p-3 bg-[#191b23] border border-[#32353d]">
+              <span className="text-[11px] text-[#9e8e7e] block mb-2 font-bold">تجربة سريعة للعميل (تبديل الصلاحية بنقرة واحدة):</span>
+              <div className="grid grid-cols-3 gap-2">
+                {users.map((u) => (
+                  <button
+                    key={u.id}
+                    onClick={() => {
+                      setCurrentUser(u);
+                      setShowAuthModal(false);
+                      showToast(`تم التبديل إلى: ${u.fullName} (${u.role})`);
+                    }}
+                    className={`p-2 border text-[10px] font-bold text-center transition-colors ${
+                      currentUser?.id === u.id ? 'bg-[#c88a35] text-[#452900] border-[#feb95f]' : 'bg-[#10131a] text-[#e1e2ec] border-[#32353d]'
+                    }`}
+                  >
+                    <div>{u.fullName}</div>
+                    <div className="text-[8px] opacity-75 font-mono">{u.role}</div>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button 
-                onClick={handlePrint}
-                style={{ flex: 1, background: '#0f172a', color: '#ffffff', border: 'none', padding: '10px 16px', borderRadius: 6, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-              >
-                <Printer size={16} />
-                إرسال لطابعة الباركود Zebra (Print)
-              </button>
+            {/* Registration Form */}
+            <form onSubmit={handleRegisterUser} className="space-y-4">
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">الاسم الكامل للمشغل / الموظف:</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="مثال: م. مصطفى محمود"
+                  value={regFullName}
+                  onChange={(e) => setRegFullName(e.target.value)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none focus:border-[#feb95f]"
+                />
+              </div>
 
-              <button 
-                onClick={() => setPrintModalRoll(null)}
-                style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', padding: '10px 16px', borderRadius: 6, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">البريد الإلكتروني للعمل:</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="operator@cellupaper.com"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] font-mono outline-none focus:border-[#feb95f]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">الدور الوظيفي والصلاحيات (Role):</label>
+                <select
+                  value={regRole}
+                  onChange={(e) => setRegRole(e.target.value as any)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#feb95f] outline-none"
+                >
+                  <option value="CHIEF_OPERATOR">مشغل رئيسي (Chief Operator) - تحكم بالسكاكين والتقطيع</option>
+                  <option value="QC_INSPECTOR">مفتش جودة (QC Inspector) - اعتماد الفحص المخبري والشحن</option>
+                  <option value="MILL_MANAGER">مدير مصنع (Mill Manager) - لوحة تحكم وتقارير تنفيذية</option>
+                  <option value="WAREHOUSE_KEEPER">أمين مستودع (Warehouse Keeper) - نقل وتخزين الرولات</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">المصنع أو الخط الإنتاجي:</label>
+                <input
+                  type="text"
+                  value={regPlant}
+                  onChange={(e) => setRegPlant(e.target.value)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-[#c88a35] hover:bg-[#feb95f] text-[#452900] text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
               >
-                إغلاق
+                <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+                <span>تسجيل الحساب وتفعيله فوراً</span>
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: DATABASE & SUPABASE CLOUD CONNECTION */}
+      {showDbModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0b0e15] border border-[#feb95f] w-full max-w-lg p-6 shadow-2xl relative font-sans text-right">
+            <button
+              onClick={() => setShowDbModal(false)}
+              className="absolute top-4 left-4 text-[#9e8e7e] hover:text-white"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-[#feb95f] text-[24px]">database</span>
+              <h2 className="text-base font-bold text-[#feb95f]">إعدادات قاعدة البيانات والسحابة (Supabase Cloud PostgreSQL)</h2>
+            </div>
+
+            <p className="text-xs text-[#d6c3b2] mb-4">
+              يمكنك ربط المشروع بقاعدة بياناتك المرفوعة على <a href="https://supabase.com" target="_blank" rel="noreferrer" className="text-[#feb95f] underline">Supabase</a> أو الاستمرار بوضع التخزين المحلي التلقائي. كل العمليات تحفظ وتعمل 100%!
+            </p>
+
+            {dbStatusText && (
+              <div className="mb-4 p-3 bg-[#4edea3]/10 border border-[#4edea3] text-[#4edea3] text-xs font-bold">
+                {dbStatusText}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">Supabase Project URL:</label>
+                <input
+                  type="text"
+                  placeholder="https://xyzcompany.supabase.co"
+                  value={dbUrl}
+                  onChange={(e) => setDbUrl(e.target.value)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs font-mono text-[#e1e2ec] outline-none focus:border-[#feb95f]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">Supabase Anon Public API Key:</label>
+                <input
+                  type="password"
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  value={dbKey}
+                  onChange={(e) => setDbKey(e.target.value)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs font-mono text-[#e1e2ec] outline-none focus:border-[#feb95f]"
+                />
+              </div>
+
+              <div className="p-3 bg-[#191b23] border border-[#32353d] text-[11px] text-[#9e8e7e] space-y-1">
+                <span className="font-bold text-[#feb95f] block">مخطط الجداول (SQL Schema):</span>
+                <span>تم إنشاء ملف <code className="text-[#4edea3]">frontend/supabase_schema.sql</code> جاهز في المشروع. يمكنك نسخه ولصقه في Supabase SQL Editor لإنشاء الجداول بنقرة واحدة!</span>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveDbConfig}
+                  className="flex-1 py-2.5 bg-[#c88a35] hover:bg-[#feb95f] text-[#452900] text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                  <span>حفظ وتفعيل الاتصال</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setDbUrl('');
+                    setDbKey('');
+                    db.setSupabaseConfig('', '');
+                    setDbStatusText('تم تفعيل وضع التخزين المحلي المستمر (Local Storage)');
+                  }}
+                  className="px-4 py-2.5 bg-[#1d1f27] hover:bg-[#272a32] border border-[#32353d] text-xs font-bold transition-colors"
+                >
+                  التبديل للمحلي
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* MODAL 3: MANUAL MOVEMENT RECORD */}
+      {showMovementModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0b0e15] border border-[#feb95f] w-full max-w-md p-6 shadow-2xl relative font-sans text-right">
+            <button
+              onClick={() => setShowMovementModal(false)}
+              className="absolute top-4 left-4 text-[#9e8e7e] hover:text-white"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-[#feb95f] text-[20px]">add_box</span>
+              <h2 className="text-base font-bold text-[#feb95f]">تسجيل حركة مخزنية جديدة في السجل المزدوج</h2>
+            </div>
+
+            <form onSubmit={handleAddManualMovement} className="space-y-4">
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">سيريال الرول:</label>
+                <input
+                  type="text"
+                  required
+                  value={newMovSerial}
+                  onChange={(e) => setNewMovSerial(e.target.value)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs font-mono text-[#feb95f] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">نوع الحركة:</label>
+                <select
+                  value={newMovType}
+                  onChange={(e) => setNewMovType(e.target.value as any)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none font-mono"
+                >
+                  <option value="PRODUCTION_RECEIPT">PRODUCTION_RECEIPT (ورود إنتاج جديد)</option>
+                  <option value="STATUS_CHANGE">STATUS_CHANGE (تغيير حالة الرول)</option>
+                  <option value="LOCATION_TRANSFER">LOCATION_TRANSFER (نقل داخلي بين المستودعات)</option>
+                  <option value="DISPATCH">DISPATCH (شحن وتسليم للعميل)</option>
+                  <option value="SCRAP">SCRAP (تحويل لهالك أو إعادة تدوير)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">الوزن الصافي (كجم):</label>
+                <input
+                  type="number"
+                  required
+                  value={newMovWeight}
+                  onChange={(e) => setNewMovWeight(Number(e.target.value))}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs font-mono text-[#e1e2ec] outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-[#9e8e7e] block mb-1">من موقع:</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMovFrom}
+                    onChange={(e) => setNewMovFrom(e.target.value)}
+                    className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-[#9e8e7e] block mb-1">إلى موقع:</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMovTo}
+                    onChange={(e) => setNewMovTo(e.target.value)}
+                    className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9e8e7e] block mb-1">السبب / إذن الصرف أو النقل:</label>
+                <input
+                  type="text"
+                  required
+                  value={newMovReason}
+                  onChange={(e) => setNewMovReason(e.target.value)}
+                  className="w-full bg-[#191b23] border border-[#32353d] px-3 py-2 text-xs text-[#e1e2ec] outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-[#c88a35] hover:bg-[#feb95f] text-[#452900] text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[18px]">history_edu</span>
+                <span>توثيق الحركة في السجل غير القابل للتعديل</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

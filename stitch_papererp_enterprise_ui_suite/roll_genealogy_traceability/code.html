@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary-fixed":"#2a1700","surface-container-low":"#191b23","on-tertiary-fixed-variant":"#005236","on-secondary-container":"#b0b8cf","surface-container":"#1d1f27","on-tertiary-fixed":"#002113","surface-container-high":"#272a32","error":"#ffb4ab","surface-variant":"#32353d","primary-container":"#c88a35","tertiary-fixed-dim":"#4edea3","tertiary":"#4edea3","on-tertiary-container":"#003723","surface-bright":"#363941","secondary-fixed-dim":"#bec6de","primary-fixed":"#ffddb7","inverse-primary":"#855400","primary":"#feb95f","outline":"#9e8e7e","on-secondary-fixed-variant":"#3f475a","primary-fixed-dim":"#feb95f","surface-container-highest":"#32353d","surface-container-lowest":"#0b0e15","outline-variant":"#514537","on-primary":"#472a00","tertiary-fixed":"#6ffbbe","on-surface":"#e1e2ec","surface-tint":"#feb95f","secondary-container":"#41495c","on-primary-container":"#452900","on-secondary":"#283043","on-tertiary":"#003824","on-error-container":"#ffdad6","background":"#10131a","on-error":"#690005","on-background":"#e1e2ec","on-primary-fixed-variant":"#653e00","on-surface-variant":"#d6c3b2","secondary-fixed":"#dae2fb","surface-dim":"#10131a","error-container":"#93000a","secondary":"#bec6de","on-secondary-fixed":"#131b2d","tertiary-container":"#00ac77","surface":"#10131a","inverse-on-surface":"#2d3038","inverse-surface":"#e1e2ec"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"gutter":"1rem","margin":"1.5rem","gutter-expanded":"1.5rem","space-md":"0.75rem","space-xl":"2rem","space-xs":"0.25rem","margin-mobile":"0.75rem","space-lg":"1.25rem","space-sm":"0.5rem","gutter-compact":"0.5rem"},fontFamily:{"headline-lg-mobile":["IBM Plex Sans"],"display-hero-mobile":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"label-numeric-lg":["JetBrains Mono"],"label-numeric-sm":["JetBrains Mono"],"body-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"headline-sm":["IBM Plex Sans"],"label-numeric-md":["JetBrains Mono"],"display-hero":["IBM Plex Sans"],"body-lg":["IBM Plex Sans"],"label-caps":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"]},fontSize:{"headline-lg-mobile":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-hero-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-sm":["11px",{"lineHeight":"16px","fontWeight":"400"}],"label-numeric-lg":["18px",{"lineHeight":"24px","letterSpacing":"0.02em","fontWeight":"600"}],"label-numeric-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.03em","fontWeight":"500"}],"body-md":["13px",{"lineHeight":"20px","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","fontWeight":"600"}],"label-numeric-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"500"}],"display-hero":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-lg":["15px",{"lineHeight":"24px","fontWeight":"400"}],"label-caps":["10px",{"lineHeight":"14px","letterSpacing":"0.08em","fontWeight":"600"}],"headline-md":["20px",{"lineHeight":"28px","fontWeight":"500"}]}}}};</script></head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 left-0 right-0 h-16 z-50 bg-surface-container-lowest/95 backdrop-blur-md flex items-center justify-between px-margin border-b border-surface-variant/40"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-md"><div class="w-9 h-9 bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container text-[20px]">precision_manufacturing</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">PaperERP Enterprise</span><span class="font-label-caps text-label-caps text-on-surface-variant">مصنع مصر للورق والكرتون • وحدة التحكم الرئيسية PM1</span></div></div><div class="h-6 w-px bg-surface-variant/50 hidden md:block"></div><div class="hidden lg:flex items-center gap-space-md font-label-numeric-sm text-label-numeric-sm"><div class="flex items-center gap-space-xs px-2 py-1 bg-surface-container-low border border-surface-variant/60"><span class="w-1.5 h-1.5 bg-tertiary"></span><span class="text-tertiary">LAN 192.168.9.223</span><span class="text-on-surface-variant">(متصل - صالة الإنتاج PM1)</span></div><div class="flex items-center gap-space-xs px-2 py-1 bg-surface-container-low border border-surface-variant/60"><span class="material-symbols-outlined text-primary text-[14px]">schedule</span><span class="text-on-surface">وردية المساء • خط PM1</span></div></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex flex-col items-end px-3 py-1 bg-surface-container-low border border-surface-variant/40"><span class="font-label-numeric-md text-label-numeric-md text-primary tracking-wider" id="live-mill-clock">14:48:22.840</span><span class="font-label-caps text-label-caps text-on-surface-variant">UTC+02:00 CAIRO MILL TIME</span></div><div class="flex items-center gap-space-xs"><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface" title="System Status"><span class="material-symbols-outlined text-[18px]">dns</span></button><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface relative" title="Critical Plant Alerts"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 bg-error"></span></button><button class="w-8 h-8 flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface" title="Telemetry Settings"><span class="material-symbols-outlined text-[18px]">tune</span></button></div><div class="h-6 w-px bg-surface-variant/50 hidden sm:block"></div><div class="flex items-center gap-space-sm pl-1"><div class="hidden xl:flex flex-col text-left"><span class="font-headline-sm text-[12px] text-on-surface font-semibold">أحمد محمود</span><span class="font-label-caps text-[9px] text-primary">Chief Mill Operator</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><aside class="fixed right-0 top-16 bottom-0 w-72 bg-surface-container-lowest z-40 border-l border-surface-variant/40 flex flex-col justify-between"><div class="py-space-md"><div class="px-space-lg mb-space-md"><span class="font-label-caps text-label-caps text-outline tracking-widest block">وحدات التشغيل والتحكم INDUSTRIAL GATES</span></div><nav class="space-y-0.5 px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="operational-cockpit" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">grid_view</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">نظرة عامة على صالة الإنتاج</span><span class="font-label-caps text-[9px] text-outline uppercase">Operational Cockpit</span></div></div><span class="font-label-numeric-sm text-[10px] text-tertiary">ONLINE</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="deckle-calculator" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">straighten</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">حاسبة تقطيع الرولات</span><span class="font-label-caps text-[9px] text-outline uppercase">Deckle Calculator</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">v4.2</span></a><a aria-current="page" class="flex items-center justify-between px-space-md py-space-sm transition-colors border-r-2 border-transparent bg-primary-container text-on-primary-container font-semibold" data-path="roll-genealogy" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">account_tree</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">شجرة نسب الرول</span><span class="font-label-caps text-[9px] text-outline uppercase">Roll Genealogy</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">PARENT</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="qc-laboratory-gate" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">biotech</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">مختبر فحص الجودة</span><span class="font-label-caps text-[9px] text-outline uppercase">QC Laboratory Gate</span></div></div><span class="font-label-numeric-sm text-[10px] text-tertiary">ISO 187</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="thermal-label-printer" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">print</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">طباعة الباركود الحراري</span><span class="font-label-caps text-[9px] text-outline uppercase">Thermal Label Printer</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">ZEBRA</span></a><a class="flex items-center justify-between px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors border-r-2 border-transparent" data-path="immutable-stock-ledger" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-[20px]">history_edu</span><div class="flex flex-col text-right"><span class="font-headline-sm text-headline-sm">سجل حركات المخزن</span><span class="font-label-caps text-[9px] text-outline uppercase">Immutable Stock Ledger</span></div></div><span class="font-label-numeric-sm text-[10px] text-outline">AUDIT</span></a></nav></div><div class="p-space-md bg-surface-container-low border-t border-surface-variant/40"><div class="flex items-center justify-between font-label-numeric-sm text-label-numeric-sm text-on-surface-variant mb-1"><span>REEL STAND PM1 SPEED</span><span class="text-primary font-semibold">1,240 M/MIN</span></div><div class="w-full bg-surface h-1.5 overflow-hidden"><div class="bg-primary-container h-full w-[82%]"></div></div><div class="flex items-center justify-between mt-space-sm text-outline font-label-caps text-[9px]"><span>BASIS WT: 140 GSM</span><span>SLIT EFFICIENCY: 99.4%</span></div></div></aside><div class="pr-72"><main class="w-full min-h-screen pt-16 bg-surface-dim px-margin py-space-lg"><div class="flex flex-col w-full text-on-surface">
+<!-- Top Navigation Sub-Bar & Breadcrumb / Search Station -->
+<section class="w-full bg-surface-container-lowest p-space-md mb-space-lg shadow-sm">
+<div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-md">
+<!-- Breadcrumb & Mode Tag -->
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-2.5 h-2.5 bg-primary"></span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-caps text-label-caps tracking-widest">
+<span>ROOT</span>
+<span class="text-outline">/</span>
+<span>PM1-TRACEABILITY</span>
+<span class="text-outline">/</span>
+<span class="text-primary font-semibold">TREE-VIEW</span>
+</div>
+<span class="text-outline-variant font-label-numeric-sm text-label-numeric-sm px-2 py-0.5 bg-surface-container-low text-secondary-fixed">
+          TREE DEPTH: 2-TIER HIERARCHY
+        </span>
+</div>
+<!-- Quick Search / Barcode Universal Input -->
+<div class="flex flex-1 max-w-3xl items-center gap-space-xs">
+<div class="relative flex-1">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-primary">
+<span class="material-symbols-outlined text-[18px]">barcode_scanner</span>
+</div>
+<input class="w-full bg-surface-container-low text-on-surface font-label-numeric-md text-label-numeric-md pr-10 pl-24 py-2 text-right focus:outline-none focus:bg-surface-container-high placeholder:text-outline-variant selection:bg-primary-container" placeholder="امسح الباركود أو أدخل رقم السيريال..." type="text" value="SLT-02-JMB-2026-088"/>
+<div class="absolute inset-y-0 left-0 pl-2 flex items-center gap-1">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-tertiary-container/30 text-tertiary font-label-numeric-sm text-label-numeric-sm">
+<span class="w-1.5 h-1.5 bg-tertiary animate-pulse"></span>
+              LASER SCAN ACTIVE
+            </span>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 font-headline-sm text-headline-sm flex items-center gap-space-xs hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[18px]">travel_explore</span>
+<span>تتبع الشجرة</span>
+</button>
+</div>
+<!-- Quick Action Secondary Buttons -->
+<div class="flex items-center gap-space-xs">
+<button class="bg-surface-container-low hover:bg-surface-container text-on-surface px-3 py-2 text-body-sm font-body-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">filter_alt</span>
+<span>مرشحات النسب</span>
+</button>
+<button class="bg-surface-container-low hover:bg-surface-container text-on-surface px-3 py-2 text-body-sm font-body-sm flex items-center gap-space-xs" title="Export Certified Audit Manifest">
+<span class="material-symbols-outlined text-[16px] text-tertiary">verified</span>
+<span>شهادة التتبع</span>
+</button>
+</div>
+</div>
+<!-- Filter Pills / Lookup Alternatives -->
+<div class="flex flex-wrap items-center gap-space-xs mt-space-sm pt-space-sm bg-surface-container/30 px-space-sm">
+<span class="text-outline font-label-caps text-label-caps">مسارات الاستعلام البديلة:</span>
+<button class="px-2 py-0.5 bg-surface-container-high text-on-surface-variant hover:text-primary font-label-numeric-sm text-label-numeric-sm transition-colors">
+        البكرة الأم: JMB-2026-088
+      </button>
+<button class="px-2 py-0.5 bg-surface-container-high text-on-surface-variant hover:text-primary font-label-numeric-sm text-label-numeric-sm transition-colors">
+        أمر التقطيع: SLT-BATCH-2026-440
+      </button>
+<button class="px-2 py-0.5 bg-surface-container-high text-on-surface-variant hover:text-primary font-label-numeric-sm text-label-numeric-sm transition-colors">
+        شحنة التصدير: EXP-2026-9021
+      </button>
+<button class="px-2 py-0.5 bg-surface-container-high text-on-surface-variant hover:text-primary font-label-numeric-sm text-label-numeric-sm transition-colors">
+        عينة المختبر: QC-SMP-8831-A
+      </button>
+</div>
+</section>
+<!-- Main Split Architecture: Tree Node Visualization + Ledger / QC Deck -->
+<div class="grid grid-cols-1 2xl:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT/MAIN COLUMN (2xl:col-span-8): Interactive Tree Structure -->
+<div class="2xl:col-span-8 flex flex-col gap-space-lg">
+<!-- GENEALOGY CANVAS WRAPPER -->
+<div class="bg-surface-container-lowest p-space-lg relative overflow-hidden shadow-md">
+<!-- Technical Mill Blueprint Pattern Overlay -->
+<div class="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-tertiary/5 blur-3xl pointer-events-none"></div>
+<!-- Canvas Header Bar -->
+<div class="flex items-center justify-between pb-space-md mb-space-lg bg-surface-container-low px-space-md py-space-sm">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-primary text-[24px]">account_tree</span>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface">خريطة الاشتقاق والتفرع الميكانيكي للبكرة الأم</div>
+<div class="font-label-caps text-label-caps text-outline uppercase">Pope Reel to Finished Child Slit Cores Hierarchy</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md font-label-numeric-sm text-label-numeric-sm">
+<span class="text-tertiary flex items-center gap-1">
+<span class="w-2 h-2 bg-tertiary"></span>
+              كتلة موزونة 100% متطابقة
+            </span>
+<span class="text-outline">CALIPER ISO 534 VERIFIED</span>
+</div>
+</div>
+<!-- LEVEL 1: ROOT NODE (Jumbo Mother Roll) -->
+<div class="relative w-full max-w-4xl mx-auto mb-space-xl">
+<!-- Parent Card -->
+<div class="bg-surface-container p-space-lg relative shadow-lg">
+<!-- Brass corner indicator -->
+<div class="absolute top-0 right-0 w-3 h-3 bg-primary"></div>
+<div class="flex flex-col lg:flex-row items-start justify-between gap-space-md">
+<!-- Left Machine Details -->
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 bg-primary-container/20 flex flex-col items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]">motion_photos_on</span>
+<span class="font-label-numeric-sm text-[9px] mt-0.5">PM1</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs mb-1">
+<span class="px-2 py-0.5 bg-primary text-on-primary font-label-caps text-label-caps font-bold">
+                      بكرة البوب الأم (POPE REEL)
+                    </span>
+<span class="text-outline font-label-caps text-label-caps">PARENT MASTER ROLL</span>
+</div>
+<div class="font-label-numeric-lg text-label-numeric-lg text-primary tracking-wide">
+                    JMB-2026-088
+                  </div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                    صنف الورق: <strong class="text-on-surface">Testliner Grade-A (150 GSM)</strong> • ماكينة الورق: <strong class="text-primary font-label-numeric-sm">Paper Machine PM1</strong>
+</div>
+</div>
+</div>
+<!-- Quick Spec Metric Badges -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-xs w-full lg:w-auto font-label-numeric-sm text-label-numeric-sm">
+<div class="bg-surface-container-low p-2">
+<div class="text-outline text-label-caps font-label-caps">الوزن الصافي القائم</div>
+<div class="text-primary font-bold text-label-numeric-md">3,000.00 <span class="text-body-sm font-normal">kg</span></div>
+</div>
+<div class="bg-surface-container-low p-2">
+<div class="text-outline text-label-caps font-label-caps">عرض التخريج الكلي</div>
+<div class="text-on-surface font-bold text-label-numeric-md">2,400 <span class="text-body-sm font-normal">mm</span></div>
+</div>
+<div class="bg-surface-container-low p-2">
+<div class="text-outline text-label-caps font-label-caps">قطر اللفة الخارجي</div>
+<div class="text-on-surface font-bold text-label-numeric-md">1,820 <span class="text-body-sm font-normal">mm</span></div>
+</div>
+<div class="bg-surface-container-low p-2">
+<div class="text-outline text-label-caps font-label-caps">توقيت الإنزال</div>
+<div class="text-tertiary font-bold text-[11px]">18:42:10</div>
+</div>
+</div>
+</div>
+<!-- Operator Footer Strip -->
+<div class="mt-space-md pt-space-sm bg-surface-container-low px-space-md flex flex-wrap items-center justify-between text-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">engineering</span>
+<span>مشغل البوب: <strong class="text-on-surface">م. أحمد محمود</strong> (وردية المساء)</span>
+</div>
+<div class="flex items-center gap-space-sm font-label-numeric-sm text-label-numeric-sm text-outline">
+<span>تاريخ التصنيع: 2026-03-29</span>
+<span>•</span>
+<span class="text-tertiary">سليم بنسبة 100% دون كسر ويب</span>
+</div>
+</div>
+</div>
+<!-- CONNECTOR STEM (DOWNWARDS) -->
+<div class="w-0.5 h-10 bg-primary mx-auto my-0"></div>
+<!-- CONNECTOR NODE: SLITTER REWINDER BATCH -->
+<div class="max-w-xl mx-auto bg-surface-container-high p-space-md relative shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<div class="w-8 h-8 bg-surface-container-lowest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">content_cut</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span>محطة القص وإعادة اللف: Slitter-Rewinder #1</span>
+<span class="bg-surface-container-lowest text-primary px-1.5 py-0.2 font-label-numeric-sm text-label-numeric-sm">SLT-BATCH-2026-440</span>
+</div>
+<div class="font-label-caps text-label-caps text-outline">RUN PROFILE: 600 M/MIN • 4 KNIVES POSITIONED • AUTOMATIC CORE LOAD</div>
+</div>
+</div>
+<div class="text-left font-label-numeric-sm text-label-numeric-sm">
+<div class="text-outline">إجمالي الهالك (TRIM SCRAP)</div>
+<div class="text-error font-semibold">62.50 kg (2.08%)</div>
+</div>
+</div>
+</div>
+<!-- SPLIT DISTRIBUTION GRAPHIC LINE -->
+<div class="w-0.5 h-8 bg-outline-variant mx-auto my-0"></div>
+<!-- Horizontal Split Distribution Rail across the 4 leaves -->
+<div class="w-full h-0.5 bg-outline-variant relative">
+<!-- Pin drops directly above each child node position -->
+<div class="absolute top-0 right-[12%] w-2 h-2 -translate-y-1/2 bg-outline"></div>
+<div class="absolute top-0 right-[37%] w-3 h-3 -translate-y-1/2 bg-primary"></div>
+<div class="absolute top-0 right-[62%] w-2 h-2 -translate-y-1/2 bg-outline"></div>
+<div class="absolute top-0 right-[87%] w-2 h-2 -translate-y-1/2 bg-error"></div>
+</div>
+</div>
+<!-- LEVEL 2: SIBLING CHILD SLIT ROLLS GRID -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-sm pt-space-xs">
+<!-- CHILD 1: SLT-01 -->
+<div class="bg-surface-container hover:bg-surface-container-high transition-colors p-space-md flex flex-col justify-between relative shadow-sm">
+<div class="w-full">
+<div class="flex items-center justify-between mb-2">
+<span class="px-1.5 py-0.5 bg-surface-container-low text-on-surface-variant font-label-numeric-sm text-label-numeric-sm">
+                  SLIT 01 / ROLL A
+                </span>
+<span class="text-tertiary font-label-numeric-sm text-label-numeric-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-tertiary"></span>
+                  مخزون تام
+                </span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-on-surface font-semibold truncate mb-1">
+                SLT-01-JMB-2026-088
+              </div>
+<div class="font-body-sm text-body-sm text-outline mb-3">
+                مخصص لأمر التوريد العام
+              </div>
+<!-- Physical Specs -->
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm bg-surface-container-low p-2">
+<div class="flex justify-between text-on-surface-variant">
+<span>العرض (Width):</span>
+<strong class="text-on-surface">1,000 mm</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>الوزن الصافي:</span>
+<strong class="text-on-surface">1,250.00 kg</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>نسبة الكتلة:</span>
+<strong class="text-secondary">41.67%</strong>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-2 bg-surface-container-lowest px-2 py-1 flex items-center justify-between text-body-sm text-body-sm text-outline">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warehouse</span>
+                Bay B-04
+              </span>
+<span class="font-label-numeric-sm text-label-numeric-sm">RL-7781</span>
+</div>
+</div>
+<!-- CHILD 2: SLT-02 (THE SEARCHED HIGHLIGHTED ROLL) -->
+<div class="bg-surface-container-high p-space-md flex flex-col justify-between relative shadow-xl ring-2 ring-primary">
+<!-- Focus Stamp Top Banner -->
+<div class="bg-primary text-on-primary font-label-caps text-label-caps px-2 py-0.5 font-bold flex items-center justify-between -mx-space-md -mt-space-md mb-2">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">my_location</span>
+                الرول المستهدف بالاستعلام (TARGET INSPECTION)
+              </span>
+<span>LIVE MATCH</span>
+</div>
+<div class="w-full">
+<div class="flex items-center justify-between mb-2">
+<span class="px-1.5 py-0.5 bg-primary/20 text-primary font-label-numeric-sm text-label-numeric-sm font-semibold">
+                  SLIT 02 / ROLL B
+                </span>
+<span class="px-1.5 py-0.5 bg-tertiary-container/30 text-tertiary font-label-numeric-sm text-label-numeric-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+                  RELEASED
+                </span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-primary font-bold truncate mb-1">
+                SLT-02-JMB-2026-088
+              </div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-3">
+                عميل: <strong class="text-on-surface">شركة الأهرام للكرتون المضلع</strong>
+</div>
+<!-- Physical Specs -->
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm bg-surface-container-lowest p-2">
+<div class="flex justify-between text-on-surface-variant">
+<span>العرض (Width):</span>
+<strong class="text-primary font-bold">1,000 mm</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>الوزن الصافي:</span>
+<strong class="text-primary font-bold">1,250.00 kg</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>نسبة الكتلة:</span>
+<strong class="text-tertiary font-bold">41.67%</strong>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-2 bg-surface-container px-2 py-1.5 flex items-center justify-between text-body-sm text-body-sm">
+<span class="flex items-center gap-1 text-on-surface font-semibold">
+<span class="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
+                رصيف الشحن Dock-2
+              </span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary">ORD-9921</span>
+</div>
+</div>
+<!-- CHILD 3: SLT-03 -->
+<div class="bg-surface-container hover:bg-surface-container-high transition-colors p-space-md flex flex-col justify-between relative shadow-sm">
+<div class="w-full">
+<div class="flex items-center justify-between mb-2">
+<span class="px-1.5 py-0.5 bg-surface-container-low text-on-surface-variant font-label-numeric-sm text-label-numeric-sm">
+                  SLIT 03 / ROLL C
+                </span>
+<span class="text-tertiary font-label-numeric-sm text-label-numeric-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-tertiary"></span>
+                  مخزون تام
+                </span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-on-surface font-semibold truncate mb-1">
+                SLT-03-JMB-2026-088
+              </div>
+<div class="font-body-sm text-body-sm text-outline mb-3">
+                رول فرعي قياسي (Buffer Core)
+              </div>
+<!-- Physical Specs -->
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm bg-surface-container-low p-2">
+<div class="flex justify-between text-on-surface-variant">
+<span>العرض (Width):</span>
+<strong class="text-on-surface">350 mm</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>الوزن الصافي:</span>
+<strong class="text-on-surface">437.50 kg</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>نسبة الكتلة:</span>
+<strong class="text-secondary">14.58%</strong>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-2 bg-surface-container-lowest px-2 py-1 flex items-center justify-between text-body-sm text-body-sm text-outline">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warehouse</span>
+                Bay C-01
+              </span>
+<span class="font-label-numeric-sm text-label-numeric-sm">RL-7783</span>
+</div>
+</div>
+<!-- CHILD 4: TRIM EDGE SCRAP -->
+<div class="bg-surface-container-low opacity-90 p-space-md flex flex-col justify-between relative shadow-sm">
+<div class="w-full">
+<div class="flex items-center justify-between mb-2">
+<span class="px-1.5 py-0.5 bg-surface-container text-outline font-label-numeric-sm text-label-numeric-sm">
+                  RECYCLABLE
+                </span>
+<span class="px-1.5 py-0.5 bg-error-container/30 text-error font-label-numeric-sm text-label-numeric-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">recycling</span>
+                  هالك جوانب
+                </span>
+</div>
+<div class="font-label-numeric-md text-label-numeric-md text-on-surface-variant font-semibold truncate mb-1">
+                SCRAP-TRIM-088
+              </div>
+<div class="font-body-sm text-body-sm text-outline mb-3">
+                حواف مشذوبة (Trim Ribbon)
+              </div>
+<!-- Physical Specs -->
+<div class="space-y-1 font-label-numeric-sm text-label-numeric-sm bg-surface-container p-2">
+<div class="flex justify-between text-on-surface-variant">
+<span>إجمالي العرضين:</span>
+<strong class="text-on-surface">50 mm</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>وزن الهالك:</span>
+<strong class="text-error">62.50 kg</strong>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>نسبة الفاقد:</span>
+<strong class="text-error">2.08%</strong>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-2 bg-surface-container-lowest px-2 py-1 flex items-center justify-between text-body-sm text-body-sm text-error">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">rotate_right</span>
+                العجانة Pulper PM1
+              </span>
+<span class="font-label-numeric-sm text-label-numeric-sm">PULP-REC</span>
+</div>
+</div>
+</div>
+<!-- Mass Conservation Verification Bar -->
+<div class="mt-space-lg pt-space-md bg-surface-container-low p-space-md flex flex-col lg:flex-row items-center justify-between gap-space-md text-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[20px]">scale</span>
+<div class="text-on-surface">
+<span>معادلة اتزان الكتلة الفيزيائية: </span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">
+                (1,250 + 1,250 + 437.5 + 62.5) = <strong class="text-primary font-bold">3,000.00 kg</strong> (100% تطابق تام)
+              </span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm font-label-numeric-sm text-label-numeric-sm text-outline">
+<span>عرض البوب: 2,400 mm</span>
+<span>•</span>
+<span>مجموع عرض الرولات: 2,400 mm</span>
+<span>•</span>
+<span class="text-tertiary">نسبة الحيود: 0.00%</span>
+</div>
+</div>
+</div>
+<!-- VISUAL QUALITY TELEMETRY & PHYSICAL TEST PROFILE (CERTIFICATE SUMMARY) -->
+<div class="bg-surface-container-lowest p-space-lg shadow-md">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm pb-space-sm mb-space-md bg-surface-container-low px-space-md py-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[22px]">verified_user</span>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface">نتائج الاختبارات المعملية المعتمدة للرول الحالي</div>
+<div class="font-label-caps text-label-caps text-outline uppercase">Physical Laboratory Certificate • ISO 187 Standard Conditions</div>
+</div>
+</div>
+<span class="px-2 py-0.5 bg-tertiary-container/20 text-tertiary font-label-numeric-sm text-label-numeric-sm font-bold">
+            CERTIFICATE PASS #LAB-2026-904
+          </span>
+</div>
+<!-- Lab Metrics Matrix -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-sm mb-space-md font-label-numeric-md">
+<div class="bg-surface-container p-space-sm">
+<div class="flex justify-between items-center text-outline text-label-caps font-label-caps mb-1">
+<span>وزن المتر المربع GSM</span>
+<span class="text-tertiary">±1.5%</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-headline-lg font-bold text-on-surface">149.8</span>
+<span class="font-body-sm text-body-sm text-outline">g/m²</span>
+</div>
+<div class="mt-2 text-body-sm text-body-sm text-on-surface-variant flex justify-between">
+<span>المستهدف: 150.0</span>
+<span class="text-tertiary font-label-numeric-sm">مطابق</span>
+</div>
+</div>
+<div class="bg-surface-container p-space-sm">
+<div class="flex justify-between items-center text-outline text-label-caps font-label-caps mb-1">
+<span>نسبة الرطوبة (Moisture)</span>
+<span class="text-primary">SPEC: 6.5-8.0</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-headline-lg font-bold text-primary">7.2</span>
+<span class="font-body-sm text-body-sm text-outline">%</span>
+</div>
+<div class="mt-2 text-body-sm text-body-sm text-on-surface-variant flex justify-between">
+<span>المدى المثالي</span>
+<span class="text-tertiary font-label-numeric-sm">متزن</span>
+</div>
+</div>
+<div class="bg-surface-container p-space-sm">
+<div class="flex justify-between items-center text-outline text-label-caps font-label-caps mb-1">
+<span>مقاومة الانفجار Burst</span>
+<span class="text-tertiary">ISO 2759</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-headline-lg font-bold text-on-surface">385</span>
+<span class="font-body-sm text-body-sm text-outline">kPa</span>
+</div>
+<div class="mt-2 text-body-sm text-body-sm text-on-surface-variant flex justify-between">
+<span>الحد الأدنى: 360</span>
+<span class="text-tertiary font-label-numeric-sm">+6.9%</span>
+</div>
+</div>
+<div class="bg-surface-container p-space-sm">
+<div class="flex justify-between items-center text-outline text-label-caps font-label-caps mb-1">
+<span>امتصاص الماء كـوب Cobb₆₀</span>
+<span class="text-outline">ISO 535</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-headline-lg font-bold text-on-surface">38.0</span>
+<span class="font-body-sm text-body-sm text-outline">g/m²</span>
+</div>
+<div class="mt-2 text-body-sm text-body-sm text-on-surface-variant flex justify-between">
+<span>المعيار: ≤ 45</span>
+<span class="text-tertiary font-label-numeric-sm">ممتاز</span>
+</div>
+</div>
+</div>
+<!-- Cryptographic Audit Hash Bar -->
+<div class="bg-surface-container-low p-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-xs font-label-numeric-sm text-label-numeric-sm">
+<div class="flex items-center gap-space-xs text-outline">
+<span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
+<span>SHA-256 LEDGER AUDIT HASH:</span>
+</div>
+<span class="font-label-numeric-sm text-[11px] text-secondary tracking-wider truncate max-w-xl select-all">
+            e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          </span>
+<span class="text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+            IMMUTABLE
+          </span>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN (2xl:col-span-4): Immutable Lifecycle Timeline & Custody Log -->
+<div class="2xl:col-span-4 flex flex-col gap-space-lg">
+<!-- Target Roll Passport Card -->
+<div class="bg-surface-container p-space-lg shadow-md relative">
+<div class="flex items-center justify-between pb-space-sm mb-space-md bg-surface-container-low px-space-md py-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">badge</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">جواز سفر الرول الفرعي</span>
+</div>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">SLT-02 PASSPORT</span>
+</div>
+<!-- Serial & Barcode Simulation -->
+<div class="bg-surface-container-lowest p-space-md mb-space-md text-center">
+<!-- Monospaced high-contrast serial -->
+<div class="font-label-numeric-lg text-label-numeric-lg text-primary tracking-widest mb-2 font-bold">
+            SLT-02-JMB-2026-088
+          </div>
+<!-- Clean SVG Barcode Rendering (No external asset) -->
+<svg class="w-full h-12 text-on-surface mx-auto" preserveaspectratio="none" viewbox="0 0 300 48">
+<rect fill="currentColor" height="48" width="4" x="0" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="8" y="0"></rect>
+<rect fill="currentColor" height="48" width="6" x="14" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="24" y="0"></rect>
+<rect fill="currentColor" height="48" width="8" x="30" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="42" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="50" y="0"></rect>
+<rect fill="currentColor" height="48" width="10" x="56" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="70" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="78" y="0"></rect>
+<rect fill="currentColor" height="48" width="6" x="84" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="94" y="0"></rect>
+<rect fill="currentColor" height="48" width="8" x="102" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="114" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="120" y="0"></rect>
+<rect fill="currentColor" height="48" width="12" x="128" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="144" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="152" y="0"></rect>
+<rect fill="currentColor" height="48" width="8" x="158" y="0"></rect>
+<rect fill="currentColor" height="48" width="6" x="170" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="180" y="0"></rect>
+<rect fill="currentColor" height="48" width="10" x="186" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="200" y="0"></rect>
+<rect fill="currentColor" height="48" width="6" x="208" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="218" y="0"></rect>
+<rect fill="currentColor" height="48" width="8" x="224" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="236" y="0"></rect>
+<rect fill="currentColor" height="48" width="10" x="244" y="0"></rect>
+<rect fill="currentColor" height="48" width="2" x="258" y="0"></rect>
+<rect fill="currentColor" height="48" width="6" x="264" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="274" y="0"></rect>
+<rect fill="currentColor" height="48" width="8" x="282" y="0"></rect>
+<rect fill="currentColor" height="48" width="4" x="294" y="0"></rect>
+</svg>
+<div class="font-label-caps text-label-caps text-outline tracking-widest mt-1">
+            GS1-128 CODE 128 MILL STANDARD COMPLIANT
+          </div>
+</div>
+<!-- Specifications Breakdown -->
+<div class="space-y-space-xs font-label-numeric-sm text-label-numeric-sm">
+<div class="flex items-center justify-between p-2 bg-surface-container-low">
+<span class="text-outline">أمر التوريد المحجوز:</span>
+<span class="text-primary font-bold">ORD-9921 (شركة الأهرام للكرتون)</span>
+</div>
+<div class="flex items-center justify-between p-2 bg-surface-container-low">
+<span class="text-outline">موقع التخزين الحالي:</span>
+<span class="text-on-surface font-semibold">رصيف الشحن رقم Dock-2</span>
+</div>
+<div class="flex items-center justify-between p-2 bg-surface-container-low">
+<span class="text-outline">قطر البكرة الداخلي (Core):</span>
+<span class="text-on-surface">76 mm (3 بوصة - ماسورة كرتون مقوى)</span>
+</div>
+<div class="flex items-center justify-between p-2 bg-surface-container-low">
+<span class="text-outline">الطول الإجمالي التقديري:</span>
+<span class="text-on-surface">8,344 متر طولي</span>
+</div>
+<div class="flex items-center justify-between p-2 bg-surface-container-low">
+<span class="text-outline">حالة الفحص الكلي:</span>
+<span class="text-tertiary font-bold">معتمد نهائياً بدون أي ملاحظات</span>
+</div>
+</div>
+</div>
+<!-- CRYPTOGRAPHIC AUDIT TIMELINE (سجل دورة حياة الرول) -->
+<div class="bg-surface-container-lowest p-space-lg shadow-md flex-1">
+<div class="flex items-center justify-between pb-space-sm mb-space-lg bg-surface-container-low px-space-md py-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">history_edu</span>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface">سجل دورة الحياة والتسليم غير القابل للتعديل</div>
+<div class="font-label-caps text-label-caps text-outline">Immutable Blockchain-Style Audit Ledger</div>
+</div>
+</div>
+<span class="w-2 h-2 bg-tertiary"></span>
+</div>
+<!-- Timeline Items Container -->
+<div class="relative pl-2 pr-4 space-y-space-md before:content-[''] before:absolute before:top-2 before:bottom-2 before:right-7 before:w-0.5 before:bg-surface-variant">
+<!-- Event 1 -->
+<div class="relative flex items-start gap-space-md">
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-primary z-10 shrink-0">
+<span class="font-label-numeric-sm text-[10px] font-bold">01</span>
+</div>
+<div class="bg-surface-container p-space-sm flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-[13px] text-on-surface font-semibold">تخريج البوب وتوليد المعرف</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-primary">18:42:10</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                خروج البكرة الأم من بوب ماكينة PM1 بوزن 3,000 كجم وتوليد بطاقة التعريف المشفرة الأصلية JMB-2026-088.
+              </p>
+<div class="mt-1 font-label-caps text-label-caps text-outline">OPERATOR: AHMED MAHMOUD • PM1 REEL DRUM</div>
+</div>
+</div>
+<!-- Event 2 -->
+<div class="relative flex items-start gap-space-md">
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-primary z-10 shrink-0">
+<span class="font-label-numeric-sm text-[10px] font-bold">02</span>
+</div>
+<div class="bg-surface-container p-space-sm flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-[13px] text-on-surface font-semibold">المناولة للونش العلوي والمقص</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">19:05:30</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                النقل الآلي عبر الونش الكهرومغناطيسي العلوي كران 02 إلى حامل رولات المقص Slitter-Rewinder #1 دون إجهاد لسطح اللفة.
+              </p>
+<div class="mt-1 font-label-caps text-label-caps text-outline">AUTONOMOUS CRANE #2 • LOAD SENSOR OK</div>
+</div>
+</div>
+<!-- Event 3 -->
+<div class="relative flex items-start gap-space-md">
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-primary z-10 shrink-0">
+<span class="font-label-numeric-sm text-[10px] font-bold">03</span>
+</div>
+<div class="bg-surface-container p-space-sm flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-[13px] text-on-surface font-semibold">اكتمال دورة التقطيع وإعادة اللف</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">19:22:15</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                انتهاء أمر التشغيل SLT-BATCH-2026-440 وتوليد الرولات الفرعية الثلاثة وتوجيه الهالك 62.5 كجم إلى قادوس العجانة.
+              </p>
+<div class="mt-1 font-label-caps text-label-caps text-outline">SLITTER SPEED 600 M/MIN • DUAL REWIND SHAFTS</div>
+</div>
+</div>
+<!-- Event 4 -->
+<div class="relative flex items-start gap-space-md">
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-primary z-10 shrink-0">
+<span class="font-label-numeric-sm text-[10px] font-bold">04</span>
+</div>
+<div class="bg-surface-container p-space-sm flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-[13px] text-on-surface font-semibold">سحب عينات الفحص المخبري</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-outline">19:40:00</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                سحب عينة 30×30 سم من بداية ونهاية الرول SLT-02 للفحص الفيزيائي والميكانيكي بغرفة القياس المكيفة.
+              </p>
+<div class="mt-1 font-label-caps text-label-caps text-outline">QC TECHNICIAN: ENG. MONA K. • SAMPLE ID SMP-8831</div>
+</div>
+</div>
+<!-- Event 5 -->
+<div class="relative flex items-start gap-space-md">
+<div class="w-6 h-6 bg-tertiary-container/40 flex items-center justify-center text-tertiary z-10 shrink-0">
+<span class="material-symbols-outlined text-[14px]">done_all</span>
+</div>
+<div class="bg-surface-container p-space-sm flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-[13px] text-tertiary font-bold">اعتماد الجودة والإفراج النهائي</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-tertiary">20:15:22</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+                اعتماد مطابقة المواصفة القياسية المصرية والصادرات، وتطبيق ختم الإفراج الرسمي رقم <strong class="text-tertiary">QC-REL-2026</strong> بتوقيع مدير الجودة د. سامح فؤاد.
+              </p>
+<div class="mt-1 font-label-caps text-label-caps text-outline">SIGNATURE: DR. SAMEH FOUAD • PASSED ALL CRITERIA</div>
+</div>
+</div>
+<!-- Event 6 -->
+<div class="relative flex items-start gap-space-md">
+<div class="w-6 h-6 bg-primary flex items-center justify-center text-on-primary z-10 shrink-0">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+</div>
+<div class="bg-surface-container-high p-space-sm flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-[13px] text-primary font-bold">الحجز لأمر التوريد للشحن</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-primary">21:00:00</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+                تم ربط الرول بأمر التوريد <strong class="text-primary font-label-numeric-sm">ORD-9921</strong> والنقل فوراً إلى رصيف الشحن رقم Dock-2 تمهيداً للتحميل على الشاحنة.
+              </p>
+<div class="mt-1 font-label-caps text-label-caps text-outline">LOGISTICS ERP INTEGRATION • DISPATCH GATE READY</div>
+</div>
+</div>
+</div>
+<!-- Print & Dispatch Action Buttons -->
+<div class="mt-space-lg pt-space-md bg-surface-container-low p-space-sm flex items-center justify-between gap-space-sm">
+<button class="flex-1 bg-surface-container hover:bg-surface-container-high text-on-surface py-2 text-body-sm font-body-sm flex items-center justify-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[18px] text-primary">print</span>
+<span>إعادة طباعة ملصق الباركود</span>
+</button>
+<button class="flex-1 bg-primary text-on-primary hover:bg-primary-fixed py-2 text-headline-sm font-headline-sm flex items-center justify-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+<span>تحميل سجل التدقيق الكامل</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Pure inline vanilla JS for micro-interactions
+    document.addEventListener('DOMContentLoaded', function () {
+      const liveClock = document.getElementById('live-mill-clock');
+      if (liveClock) {
+        setInterval(() => {
+          const now = new Date();
+          const ms = String(now.getMilliseconds()).padStart(3, '0');
+          const timeStr = now.toLocaleTimeString('en-GB', { hour12: false }) + '.' + ms;
+          liveClock.textContent = timeStr;
+        }, 87);
+      }
+    });
+  </script>
+</div></main></div></body></html>
