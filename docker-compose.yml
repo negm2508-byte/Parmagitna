@@ -1,0 +1,29 @@
+# ==============================================================================
+# PaperERP Enterprise — Local Development Infrastructure
+# PostgreSQL 16+ Database with persistent volume and healthcheck
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: papererp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-papererp}
+      POSTGRES_USER: ${DB_USER:-papererp}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-papererp_dev_password}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-papererp} -d ${DB_NAME:-papererp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local

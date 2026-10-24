@@ -1,0 +1,19 @@
+# ==============================================================================
+# PaperERP Enterprise — Code Ownership Rules
+# ==============================================================================
+
+# Global fallback: Team review
+*                                           @papererp-team
+
+# Developer A: Architecture, Security, Common Utilities & CI
+.github/workflows/                          @dev-a
+backend/paper-erp-common/                   @dev-a
+backend/paper-erp-api/src/main/java/com/papererp/api/config/ @dev-a
+docker-compose.yml                          @dev-a
+
+# Developer B: Manufacturing Domain, Database Schema, Flyway & Ledger
+backend/paper-erp-core/                     @dev-b
+backend/paper-erp-core/src/main/resources/db/migration/ @dev-b
+
+# Developer C: Frontend Application, Arabic RTL & UI Components
+frontend/                                   @dev-c
