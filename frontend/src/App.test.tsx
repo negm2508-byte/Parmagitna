@@ -22,6 +22,6 @@ describe('PaperERP Industrial UI Smoke Test', () => {
   it('displays the local factory LAN address and database status', () => {
     render(<App />);
     expect(screen.getByText(/LAN 192.168.9.223/i)).toBeInTheDocument();
-    expect(screen.getByText(/Local Persistence/i)).toBeInTheDocument();
+    expect(screen.getByText(/Supabase PostgreSQL|Local Persistence/i)).toBeInTheDocument();
   });
 });

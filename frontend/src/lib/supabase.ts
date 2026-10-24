@@ -1,7 +1,9 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { UserProfile, JumboRoll, ChildSlitRoll, QCTest, StockMovement } from '../types';
 
-// Initial pre-seeded mock dataset for instant zero-config interactive demo
+export const DEFAULT_SUPABASE_URL = 'https://vjsdkmnkzadyefkftaeh.supabase.co';
+export const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqc2RrbW5remFkeWVma2Z0YWVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NjQ4NzcsImV4cCI6MjEwODQ0MDg3N30.qG-fWgtQRAmwZg7kjCWWc8S_TM_W2IKZjYr5b-43fNE';
+
 const DEFAULT_USERS: UserProfile[] = [
   {
     id: 'usr-1',
@@ -163,7 +165,7 @@ const DEFAULT_MOVEMENTS: StockMovement[] = [
     toLocation: 'منطقة الرولات الجامبو WIP',
     actor: 'م. أحمد محمود (مشغل رئيسي)',
     reason: 'خروج رول الجامبو من خط الورق ومطابقة ميزان البسكول',
-    auditHash: '0x8f4d92a10c7e48b9'
+    auditHash: '0x8f4d92a10c7e'
   },
   {
     id: 'mov-2',
@@ -176,7 +178,7 @@ const DEFAULT_MOVEMENTS: StockMovement[] = [
     toLocation: 'محطة سكاكين التقطيع SLT-04',
     actor: 'م. أحمد محمود (مشغل رئيسي)',
     reason: 'تحميل الرول على ستاند التغذية وبدء أمر التقطيع الدائري',
-    auditHash: '0x3b1c8f420e9a7d21'
+    auditHash: '0x3b1c8f420e9a'
   },
   {
     id: 'mov-3',
@@ -189,7 +191,7 @@ const DEFAULT_MOVEMENTS: StockMovement[] = [
     toLocation: 'محطة فحص الجودة QC Lab',
     actor: 'م. أحمد محمود (مشغل رئيسي)',
     reason: 'توليد رول مقصوص عرض 1000 مم وتثبيت ماسورة 76 مم',
-    auditHash: '0x4a92c0183b5e8f17'
+    auditHash: '0x4a92c0183b5e'
   },
   {
     id: 'mov-4',
@@ -202,7 +204,7 @@ const DEFAULT_MOVEMENTS: StockMovement[] = [
     toLocation: 'مستودع A - ممر 04 - رصة 2',
     actor: 'ك. مصطفى إبراهيم (مفتش جودة)',
     reason: 'اعتماد الفحص المخبري وتخزين الرول كمنتج تام صالح للشحن',
-    auditHash: '0x7e29a41b5d803c4f'
+    auditHash: '0x7e29a41b5d80'
   }
 ];
 
@@ -222,8 +224,8 @@ class DatabaseManager {
     const localUrl = localStorage.getItem('papererp_supabase_url') || '';
     const localKey = localStorage.getItem('papererp_supabase_key') || '';
 
-    this.url = localUrl || envUrl;
-    this.key = localKey || envKey;
+    this.url = localUrl || envUrl || DEFAULT_SUPABASE_URL;
+    this.key = localKey || envKey || DEFAULT_SUPABASE_KEY;
 
     if (this.url && this.key) {
       try {
@@ -257,7 +259,6 @@ class DatabaseManager {
     }
   }
 
-  // Generic local storage helpers with defaults
   private getLocal<T>(key: string, defaultValue: T): T {
     try {
       const data = localStorage.getItem(`papererp_${key}`);
@@ -280,7 +281,16 @@ class DatabaseManager {
     if (this.supabase) {
       try {
         const { data, error } = await this.supabase.from('users').select('*');
-        if (!error && data && data.length > 0) return data;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            id: d.id,
+            email: d.email,
+            fullName: d.full_name,
+            role: d.role,
+            plant: d.plant,
+            createdAt: d.created_at
+          }));
+        }
       } catch {}
     }
     return this.getLocal<UserProfile[]>('users', DEFAULT_USERS);
@@ -295,7 +305,13 @@ class DatabaseManager {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('users').insert([newUser]);
+        await this.supabase.from('users').insert([{
+          id: newUser.id,
+          email: newUser.email,
+          full_name: newUser.fullName,
+          role: newUser.role,
+          plant: newUser.plant
+        }]);
       } catch {}
     }
 
@@ -310,7 +326,24 @@ class DatabaseManager {
     if (this.supabase) {
       try {
         const { data, error } = await this.supabase.from('jumbo_rolls').select('*').order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) return data;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            id: d.id,
+            serialNumber: d.serial_number,
+            epcRfid: d.epc_rfid,
+            grade: d.grade,
+            targetGsm: Number(d.target_gsm),
+            deckleWidthMm: Number(d.deckle_width_mm),
+            grossWeightKg: Number(d.gross_weight_kg),
+            coreTareKg: Number(d.core_tare_kg),
+            netWeightKg: Number(d.net_weight_kg),
+            machineId: d.machine_id,
+            status: d.status,
+            operatorName: d.operator_name,
+            shift: d.shift,
+            createdAt: d.created_at
+          }));
+        }
       } catch {}
     }
     return this.getLocal<JumboRoll[]>('jumbo_rolls', DEFAULT_JUMBOS);
@@ -325,7 +358,21 @@ class DatabaseManager {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('jumbo_rolls').insert([newJumbo]);
+        await this.supabase.from('jumbo_rolls').insert([{
+          id: newJumbo.id,
+          serial_number: newJumbo.serialNumber,
+          epc_rfid: newJumbo.epcRfid,
+          grade: newJumbo.grade,
+          target_gsm: newJumbo.targetGsm,
+          deckle_width_mm: newJumbo.deckleWidthMm,
+          gross_weight_kg: newJumbo.grossWeightKg,
+          core_tare_kg: newJumbo.coreTareKg,
+          net_weight_kg: newJumbo.netWeightKg,
+          machine_id: newJumbo.machineId,
+          status: newJumbo.status,
+          operator_name: newJumbo.operatorName,
+          shift: newJumbo.shift
+        }]);
       } catch {}
     }
 
@@ -339,7 +386,25 @@ class DatabaseManager {
     if (this.supabase) {
       try {
         const { data, error } = await this.supabase.from('slit_rolls').select('*').order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) return data;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            id: d.id,
+            parentJumboSerial: d.parent_jumbo_serial,
+            serialNumber: d.serial_number,
+            sequence: d.sequence,
+            widthMm: Number(d.width_mm),
+            netWeightKg: Number(d.net_weight_kg),
+            grossWeightKg: Number(d.gross_weight_kg),
+            grade: d.grade,
+            gsm: Number(d.gsm),
+            coreMm: d.core_mm,
+            diameterMm: Number(d.diameter_mm),
+            status: d.status,
+            location: d.location,
+            operatorName: d.operator_name,
+            createdAt: d.created_at
+          }));
+        }
       } catch {}
     }
     return this.getLocal<ChildSlitRoll[]>('child_rolls', DEFAULT_CHILD_ROLLS);
@@ -371,14 +436,28 @@ class DatabaseManager {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('slit_rolls').insert(createdRolls);
+        await this.supabase.from('slit_rolls').insert(createdRolls.map(r => ({
+          id: r.id,
+          parent_jumbo_serial: r.parentJumboSerial,
+          serial_number: r.serialNumber,
+          sequence: r.sequence,
+          width_mm: r.widthMm,
+          net_weight_kg: r.netWeightKg,
+          gross_weight_kg: r.grossWeightKg,
+          grade: r.grade,
+          gsm: r.gsm,
+          core_mm: r.coreMm,
+          diameter_mm: r.diameterMm,
+          status: r.status,
+          location: r.location,
+          operator_name: r.operatorName
+        })));
       } catch {}
     }
 
     const current = await this.getChildRolls();
     this.setLocal('child_rolls', [...createdRolls, ...current]);
 
-    // Record stock movement for each child roll
     for (const roll of createdRolls) {
       await this.addMovement({
         rollSerial: roll.serialNumber,
@@ -400,7 +479,23 @@ class DatabaseManager {
     if (this.supabase) {
       try {
         const { data, error } = await this.supabase.from('qc_inspections').select('*').order('inspected_at', { ascending: false });
-        if (!error && data && data.length > 0) return data;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            id: d.id,
+            rollSerial: d.roll_serial,
+            grade: d.grade,
+            actualGsm: Number(d.actual_gsm),
+            targetGsm: Number(d.target_gsm),
+            moisturePct: Number(d.moisture_pct),
+            caliperMicrons: Number(d.caliper_microns),
+            burstKpa: Number(d.burst_kpa),
+            cobb60: Number(d.cobb60),
+            disposition: d.disposition,
+            inspector: d.inspector,
+            labNotes: d.lab_notes,
+            inspectedAt: d.inspected_at
+          }));
+        }
       } catch {}
     }
     return this.getLocal<QCTest[]>('qc_tests', DEFAULT_QC_TESTS);
@@ -415,14 +510,31 @@ class DatabaseManager {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('qc_inspections').insert([newTest]);
+        await this.supabase.from('qc_inspections').insert([{
+          id: newTest.id,
+          roll_serial: newTest.rollSerial,
+          grade: newTest.grade,
+          actual_gsm: newTest.actualGsm,
+          target_gsm: newTest.targetGsm,
+          moisture_pct: newTest.moisturePct,
+          caliper_microns: newTest.caliperMicrons,
+          burst_kpa: newTest.burstKpa,
+          cobb60: newTest.cobb60,
+          disposition: newTest.disposition,
+          inspector: newTest.inspector,
+          lab_notes: newTest.labNotes
+        }]);
+
+        // Also update status in Supabase slit_rolls table
+        await this.supabase.from('slit_rolls').update({
+          status: newTest.disposition === 'RELEASED' ? 'QC_PASSED' : 'REJECTED'
+        }).eq('serial_number', newTest.rollSerial);
       } catch {}
     }
 
     const current = await this.getQCTests();
     this.setLocal('qc_tests', [newTest, ...current]);
 
-    // Update the child roll's status if applicable
     const rolls = await this.getChildRolls();
     const updatedRolls = rolls.map(r => {
       if (r.serialNumber === test.rollSerial) {
@@ -435,7 +547,6 @@ class DatabaseManager {
     });
     this.setLocal('child_rolls', updatedRolls);
 
-    // Record movement audit
     await this.addMovement({
       rollSerial: test.rollSerial,
       rollCategory: 'فرعي',
@@ -455,7 +566,21 @@ class DatabaseManager {
     if (this.supabase) {
       try {
         const { data, error } = await this.supabase.from('stock_movements').select('*').order('timestamp', { ascending: false });
-        if (!error && data && data.length > 0) return data;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            id: d.id,
+            timestamp: d.timestamp,
+            rollSerial: d.roll_serial,
+            rollCategory: d.roll_category,
+            movementType: d.movement_type,
+            netWeightKg: Number(d.net_weight_kg),
+            fromLocation: d.from_location,
+            toLocation: d.to_location,
+            actor: d.actor,
+            reason: d.reason,
+            auditHash: d.audit_hash
+          }));
+        }
       } catch {}
     }
     return this.getLocal<StockMovement[]>('movements', DEFAULT_MOVEMENTS);
@@ -472,7 +597,18 @@ class DatabaseManager {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('stock_movements').insert([newMovement]);
+        await this.supabase.from('stock_movements').insert([{
+          id: newMovement.id,
+          roll_serial: newMovement.rollSerial,
+          roll_category: newMovement.rollCategory,
+          movement_type: newMovement.movementType,
+          net_weight_kg: newMovement.netWeightKg,
+          from_location: newMovement.fromLocation,
+          to_location: newMovement.toLocation,
+          actor: newMovement.actor,
+          reason: newMovement.reason,
+          audit_hash: newMovement.auditHash
+        }]);
       } catch {}
     }
 
