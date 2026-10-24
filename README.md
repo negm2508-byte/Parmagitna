@@ -17,12 +17,17 @@ To start both servers with one click on the host server:
 .\start_server_lan.bat
 ```
 
-### 1.2 Remote Client Demonstration via Cloudflare Tunnel
-To share a live, secure HTTPS preview of the running system with a client anywhere in the world without port forwarding or static IP:
-```powershell
-.\start_cloudflare_tunnel.bat
-```
-This generates a direct live URL (e.g., `https://xxxx.trycloudflare.com`) that connects to your local instance.
+### 1.3 Automatic Cloudflare Pages Deployment on Every Git Push
+The repository contains `frontend/public/_redirects` and `frontend/public/_headers` ready for Cloudflare Pages:
+1. Go to your **[Cloudflare Dashboard](https://dash.cloudflare.com/)** -> **Workers & Pages** -> **Create application** -> **Pages** -> **Connect to Git**.
+2. Select repository: `negm2508-byte/Parmagitna`.
+3. Set the build configuration:
+   * **Framework preset**: `Vite`
+   * **Root directory**: `frontend`
+   * **Build command**: `npm run build`
+   * **Output directory**: `dist`
+4. Click **Save and Deploy**.  
+Every time we push to GitHub (`main`), Cloudflare automatically builds and updates the live URL (e.g. `https://papererp.pages.dev`) for your client!
 
 ---
 
@@ -37,7 +42,8 @@ This generates a direct live URL (e.g., `https://xxxx.trycloudflare.com`) that c
 | **Database Engine** | PostgreSQL | 16+ | Zero-trust multi-tenancy via composite foreign keys |
 | **Frontend Framework** | React + TypeScript | 19.0.0 / TS 5.7+ | Built with Vite 6 (Binds to `0.0.0.0`) |
 | **Frontend Styling** | Tailwind / Cairo Font | Logical RTL | Interactive knife deckle calculator & genealogy tree |
-| **Cloud Integration** | Cloudflare Tunnel & Pages | Latest (2026.10+) | Live client demo & static preview |
+| **Thermal Printing** | Zebra/TSC 100x150 | EAN-128 / Code 128 | Instant printable thermal barcode labels |
+| **Cloud Integration** | Cloudflare Tunnel & Pages | Latest (2026.10+) | Live client demo & automated git push deployment |
 
 ---
 
@@ -52,13 +58,13 @@ This generates a direct live URL (e.g., `https://xxxx.trycloudflare.com`) that c
   - Parent Jumbo Roll (Mother roll) transitions to `FULLY_SLIT`.
   - A `slitting_runs` batch record is created.
   - Child slit rolls are created with parent genealogy and unique serial numbers.
-  - A `CONSUMPTION` movement is recorded for the Jumbo Roll.
+  - A `STATUS_CHANGE` movement is recorded for the Jumbo Roll.
   - A `PRODUCTION_RECEIPT` movement is recorded for each child roll.
-  - Mass balance invariant is verified:
+  - Mass balance invariant is verified with strict 1.0% tolerance limit:
     $$\text{Jumbo Net Weight} = \sum \text{Child Net Weights} + \text{Trim Waste Kg} \pm \text{Scale Variance}$$
 
 ### 3.3 Atomic Rollback on Failure
-* If a slitting run fails (e.g. cut widths exceed parent deckle width, or an unexpected runtime exception occurs), the entire transaction rolls back completely:
+* If a slitting run fails (e.g. cut widths exceed parent deckle width, variance exceeds 1.0%, or an unexpected exception occurs), the entire transaction rolls back completely:
   - Parent Jumbo Roll remains `ACTIVE_WIP`.
   - Exactly zero orphaned child rolls are created.
   - Exactly zero unlinked movements exist in the ledger.
@@ -68,14 +74,14 @@ This generates a direct live URL (e.g., `https://xxxx.trycloudflare.com`) that c
 ## 4. Automated Testing & Verification Commands
 
 ```powershell
-# 1. Run all Backend tests (Spring Boot, Flyway V1/V2, Kernel Integration)
+# 1. Run all Backend tests (Spring Boot, Flyway V1/V2, Kernel Integration, REST API)
 cd backend
-.\mvnw.cmd clean test       # 7 tests run, 0 failures, 0 errors
+.\mvnw.cmd test             # 11 tests run, 0 failures, 0 errors (100% PASS)
 
 # 2. Run all Frontend tests (Vitest component tests)
 cd ..\frontend
-npm test                    # 3 tests run, 0 failures, 0 errors
+npm test                    # 3 tests run, 0 failures, 0 errors (100% PASS)
 
 # 3. Verify Frontend Production Bundle
-npm run build               # Builds cleanly in ~3.7s
+npm run build               # Builds cleanly in ~3.3s
 ```
