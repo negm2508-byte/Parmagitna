@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Binds to all interfaces for LAN access (http://192.168.9.223:5173)
     port: 5173,
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
@@ -20,5 +21,6 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: 5173,
+    allowedHosts: true,
   },
 });
