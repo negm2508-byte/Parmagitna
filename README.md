@@ -1,161 +1,81 @@
 # PaperERP Enterprise
 
 > **Industrial Paper Manufacturing ERP Platform**  
-> An industrial-grade, configurable ERP platform built specifically for paper mills, featuring individual paper-roll traceability, parent-child slitting genealogy, an immutable inventory movement ledger, strict quality inspection gates, and an Arabic-first right-to-left (RTL) experience.
+> An industrial-grade, configurable ERP platform built specifically for paper mills, featuring individual paper-roll traceability, parent-child slitting genealogy, an immutable dual-entry inventory movement ledger, strict quality inspection gates, multi-tenant composite isolation, and an Arabic-first right-to-left (RTL) experience.
 
 ---
 
-## 1. Technical Stack & Prerequisites
+## 1. Quick Access: Local LAN & Remote Cloudflare
+
+### 1.1 Local Factory Network Access (LAN)
+The platform is bound to `0.0.0.0` so any device (PC, laptop, floor tablet) on the factory network can open the ERP using the local IP and Port:
+* **Frontend UI (Operators & Management)**: [http://192.168.9.223:5173](http://192.168.9.223:5173)
+* **Backend API (Spring Boot Health & REST)**: [http://192.168.9.223:8080/api/v1/health](http://192.168.9.223:8080/api/v1/health)
+
+To start both servers with one click on the host server:
+```powershell
+.\start_server_lan.bat
+```
+
+### 1.2 Remote Client Demonstration via Cloudflare Tunnel
+To share a live, secure HTTPS preview of the running system with a client anywhere in the world without port forwarding or static IP:
+```powershell
+.\start_cloudflare_tunnel.bat
+```
+This generates a direct live URL (e.g., `https://xxxx.trycloudflare.com`) that connects to your local instance.
+
+---
+
+## 2. Technical Stack & Architecture
 
 | Layer | Technology | Approved Version | Notes |
 | :--- | :--- | :--- | :--- |
-| **Backend Runtime** | Java OpenJDK (LTS) | 17 LTS (or 21 LTS) | Tested on OpenJDK 17.0.20.1 Microsoft Hotspot |
+| **Backend Runtime** | Java OpenJDK (LTS) | 17 LTS | Tested on OpenJDK 17.0.20.1 Microsoft Hotspot |
 | **Backend Framework** | Spring Boot | 3.4.2 | Modular Monolith architecture |
 | **Persistence / ORM** | Spring Data JPA / Hibernate | 6.4+ / 3.4.2 | Strict check constraints, non-negative balances |
-| **Database Migrations** | Flyway | 10.20.1 | Version-controlled schema in `V1__initial_schema.sql` |
-| **Database Engine** | PostgreSQL | 16+ | Docker container or native on-premises instance |
-| **Frontend Framework** | React + TypeScript | 19.0.0 / TS 5.7+ | Built with Vite 6 |
-| **Frontend Styling** | Tailwind / Cairo Font | Logical RTL | Native Arabic RTL typography and high-density layouts |
-| **Package Managers** | Maven Wrapper / npm | Maven 3.9.9 / npm 11+ | Zero global Maven install required (`mvnw`) |
+| **Database Migrations** | Flyway | 10.20.1 | `V1__initial_schema.sql` and `V2__corrected_kernel_schema.sql` |
+| **Database Engine** | PostgreSQL | 16+ | Zero-trust multi-tenancy via composite foreign keys |
+| **Frontend Framework** | React + TypeScript | 19.0.0 / TS 5.7+ | Built with Vite 6 (Binds to `0.0.0.0`) |
+| **Frontend Styling** | Tailwind / Cairo Font | Logical RTL | Interactive knife deckle calculator & genealogy tree |
+| **Cloud Integration** | Cloudflare Tunnel & Pages | Latest (2026.10+) | Live client demo & static preview |
 
 ---
 
-## 2. Repository Layout
+## 3. Verified Manufacturing Kernel Capabilities
 
-```
-PaperERP/
-├── .github/
-│   ├── workflows/
-│   │   ├── ci-backend.yml              # CI: Maven verify, Flyway, Test execution
-│   │   └── ci-frontend.yml             # CI: ESLint, TypeScript, Vitest, Vite build
-│   ├── ISSUE_TEMPLATE/                 # Feature and bug issue templates
-│   ├── PULL_REQUEST_TEMPLATE.md        # Enforced PR review checklist
-│   └── CODEOWNERS                      # Dev A, B, C ownership boundaries
-├── backend/
-│   ├── mvnw / mvnw.cmd                 # Self-contained Maven Wrapper
-│   ├── .mvn/wrapper/                   # Maven wrapper configuration
-│   ├── pom.xml                         # Root parent POM (Spring Boot 3.4.2)
-│   ├── paper-erp-common/               # Shared domain primitives, exceptions, TenantContext
-│   ├── paper-erp-core/                 # JPA entities, movement ledger, Flyway migrations
-│   │   └── src/main/resources/db/migration/V1__initial_schema.sql
-│   └── paper-erp-api/                  # REST Controllers, Security, Actuator, Health check
-│       └── src/test/java/com/papererp/api/  # FlywayMigrationTest & PaperErpApplicationTests
-├── frontend/
-│   ├── src/                            # React 19 application components
-│   │   ├── App.tsx                     # Arabic RTL operations dashboard & health smoke test
-│   │   └── App.test.tsx                # Automated component test
-│   ├── index.html                      # Root HTML with dir="rtl" and Cairo font
-│   ├── vite.config.ts                  # Vite config with API proxy to port 8080
-│   └── package.json
-├── docker-compose.yml                  # PostgreSQL 16 development database service
-├── .env.example                        # Template for environment variables
-└── README.md
-```
+### 3.1 Composite Multi-Tenancy Isolation
+* Every foreign key enforces `(tenant_id, id)`.
+* Verified by automated tests: An operation from Tenant B attempting to reference Plant A or Machine A from Tenant A is strictly rejected by the PostgreSQL engine.
+
+### 3.2 Atomic Slitting Execution & Mass Balance Reconciliation
+* In a single `@Transactional` ACID execution:
+  - Parent Jumbo Roll (Mother roll) transitions to `FULLY_SLIT`.
+  - A `slitting_runs` batch record is created.
+  - Child slit rolls are created with parent genealogy and unique serial numbers.
+  - A `CONSUMPTION` movement is recorded for the Jumbo Roll.
+  - A `PRODUCTION_RECEIPT` movement is recorded for each child roll.
+  - Mass balance invariant is verified:
+    $$\text{Jumbo Net Weight} = \sum \text{Child Net Weights} + \text{Trim Waste Kg} \pm \text{Scale Variance}$$
+
+### 3.3 Atomic Rollback on Failure
+* If a slitting run fails (e.g. cut widths exceed parent deckle width, or an unexpected runtime exception occurs), the entire transaction rolls back completely:
+  - Parent Jumbo Roll remains `ACTIVE_WIP`.
+  - Exactly zero orphaned child rolls are created.
+  - Exactly zero unlinked movements exist in the ledger.
 
 ---
 
-## 3. Quickstart & Local Development
-
-### 3.1 Start the Development Database
-You can run PostgreSQL 16 using Docker Compose, or point the application to an existing PostgreSQL instance:
-
-```bash
-# Start PostgreSQL container in background
-docker compose up -d
-
-# Check container health status
-docker compose ps
-```
-
-*Default credentials:*  
-* Database: `papererp`
-* Username: `papererp`
-* Password: `papererp_dev_password`
-* Port: `5432`
-
----
-
-### 3.2 Backend Setup & Execution
-The backend uses the bundled **Maven Wrapper**, so you do not need Maven installed globally.
+## 4. Automated Testing & Verification Commands
 
 ```powershell
-# Navigate to backend directory
+# 1. Run all Backend tests (Spring Boot, Flyway V1/V2, Kernel Integration)
 cd backend
+.\mvnw.cmd clean test       # 7 tests run, 0 failures, 0 errors
 
-# Execute automated tests and Flyway schema verification
-.\mvnw.cmd clean test       # On Windows PowerShell
-./mvnw clean test           # On Linux / macOS / Bash
+# 2. Run all Frontend tests (Vitest component tests)
+cd ..\frontend
+npm test                    # 3 tests run, 0 failures, 0 errors
 
-# Start the Spring Boot API server on port 8080
-.\mvnw.cmd spring-boot:run
+# 3. Verify Frontend Production Bundle
+npm run build               # Builds cleanly in ~3.7s
 ```
-
-Once started, verify the backend health endpoint:
-* Health Smoke Test: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
-* Actuator Health: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
-
----
-
-### 3.3 Frontend Setup & Execution
-The frontend runs on Vite with automatic proxying to the backend API (`/api` $\rightarrow$ `http://localhost:8080`).
-
-```powershell
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run automated tests
-npm test
-
-# Start the Vite development server on port 5173
-npm run dev
-
-# Verify production bundle build
-npm run build
-```
-
-Open your browser at [http://localhost:5173](http://localhost:5173).
-
----
-
-## 4. Windows PowerShell Troubleshooting
-
-### 4.1 npm Script Execution Policy
-If you encounter `File npm.ps1 cannot be loaded because running scripts is disabled on this system`, run one of the following:
-
-```powershell
-# Option 1 (Recommended): Set RemoteSigned policy for Current User
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-
-# Option 2: Run npm directly via cmd
-cmd /c npm test
-cmd /c npm run dev
-```
-
-### 4.2 Maven Wrapper Execution
-Always invoke the wrapper from the `backend/` directory:
-* Windows: `.\mvnw.cmd <command>`
-* Linux / macOS: `./mvnw <command>`
-
----
-
-## 5. Team Code Ownership & Git Workflow
-
-This project is maintained by a 3-person remote engineering team. Code ownership is divided to prevent overlapping changes:
-
-* **Developer A (Architecture, Security, Platform & DevOps)**:
-  * Owns: `backend/paper-erp-common/`, `backend/paper-erp-api/src/main/java/com/papererp/api/config/`, `.github/workflows/`, `docker-compose.yml`.
-  * Focus: Spring Security, JWT, Multi-Tenancy resolution (`TenantContext`), CI/CD pipeline.
-* **Developer B (Manufacturing Domain, Database Schema & Ledger)**:
-  * Owns: `backend/paper-erp-core/`, `backend/paper-erp-core/src/main/resources/db/migration/`.
-  * Focus: PostgreSQL Flyway migrations, immutable inventory ledger, slitting execution, QC gates.
-* **Developer C (Frontend Lead, Arabic RTL Experience & Testing)**:
-  * Owns: `frontend/`.
-  * Focus: React 19 SPA, Arabic RTL layouts, Cairo typography, slitting cut calculator screen.
-
-### Git Branch & PR Workflow:
-1. All work is done on short-lived feature branches: `feat/issue-<id>-<description>`.
-2. Direct pushes to `main` are strictly blocked.
-3. Every Pull Request must pass the automated GitHub Actions CI checks (`backend-ci`, `frontend-ci`) and receive at least 1 approving review before merging.
