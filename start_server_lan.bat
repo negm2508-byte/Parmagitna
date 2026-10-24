@@ -8,7 +8,7 @@ echo ===========================================================================
 echo.
 
 echo [1/2] Starting Spring Boot Backend on 0.0.0.0:8080...
-start "PaperERP Backend (8080)" cmd /k "cd /d %~dp0backend && mvnw.cmd spring-boot:run"
+start "PaperERP Backend (8080)" cmd /k "cd /d %~dp0backend && mvnw.cmd spring-boot:run -pl paper-erp-api"
 
 echo [2/2] Starting Vite Frontend on 0.0.0.0:5173...
 start "PaperERP Frontend (5173)" cmd /k "cd /d %~dp0frontend && npm run dev -- --host 0.0.0.0"
