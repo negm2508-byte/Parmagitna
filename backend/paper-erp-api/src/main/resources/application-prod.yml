@@ -1,0 +1,54 @@
+server:
+  forward-headers-strategy: framework
+  tomcat:
+    remote-ip-header: X-Forwarded-For
+    protocol-header: X-Forwarded-Proto
+    # Trust only RFC 1918 private IP ranges for reverse proxies by default
+    internal-proxies: ${TRUSTED_PROXY_REGEX:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}}
+
+spring:
+  datasource:
+    # Fail fast if production credentials or database URL are missing
+    url: ${SUPABASE_DB_URL}
+    username: ${SUPABASE_DB_USERNAME}
+    password: ${SUPABASE_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+  data:
+    redis:
+      # Fail fast in production if Redis connection settings are not provided
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      timeout: 2000
+      connect-timeout: 2000
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
+
+app:
+  jwt:
+    # Fail fast if production JWT secret is missing
+    secret: ${APP_JWT_SECRET}
+    cookie-secure: true
+    cookie-same-site: Lax
+  rate-limiting:
+    backend: redis
+    redis-failure-mode: ${RATE_LIMITING_REDIS_FAILURE_MODE:fail-closed}
+    lockout-duration-seconds: 900
+
+springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${SPRINGDOC_SWAGGER_UI_ENABLED:false}
+
+logging:
+  level:
+    root: INFO
+    com.papererp: INFO
+    org.springframework.web: WARN
+    org.hibernate: WARN

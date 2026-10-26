@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: ${SUPABASE_DB_URL:jdbc:postgresql://localhost:5432/paper_erp_dev}
+    username: ${SUPABASE_DB_USERNAME:postgres}
+    password: ${SUPABASE_DB_PASSWORD:postgres}
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.papererp: DEBUG
+    org.springframework.security: INFO

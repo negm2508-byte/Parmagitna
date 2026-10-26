@@ -1,7 +1,0 @@
-# Development Profile Overrides
-logging:
-  level:
-    root: INFO
-    com.papererp: DEBUG
-    org.flywaydb: INFO
-    org.hibernate.SQL: DEBUG

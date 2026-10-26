@@ -8,24 +8,27 @@
         <groupId>com.papererp</groupId>
         <artifactId>paper-erp-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>paper-erp-core</artifactId>
-    <packaging>jar</packaging>
-    <name>PaperERP :: Core</name>
-    <description>Core domain models, immutable inventory ledger, and Flyway database migrations</description>
+    <name>PaperERP Core</name>
+    <description>Domain Entities, Multi-Tenant Repositories, Flyway Migrations, and Domain Services</description>
 
     <dependencies>
         <dependency>
             <groupId>com.papererp</groupId>
             <artifactId>paper-erp-common</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -34,19 +37,15 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

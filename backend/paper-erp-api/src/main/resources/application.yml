@@ -1,40 +1,81 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/}
+  shutdown: graceful
+  forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:framework}
+
 spring:
   application:
     name: paper-erp-api
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE:local}
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:papererp}}
-    username: ${DB_USER:papererp}
-    password: ${DB_PASSWORD:papererp_dev_password}
+    url: ${SUPABASE_DB_URL:jdbc:postgresql://localhost:5432/paper_erp_dev}
+    username: ${SUPABASE_DB_USERNAME:postgres}
+    password: ${SUPABASE_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 30000
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT_MS:300000}
+      connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT_MS:30000}
+      max-lifetime: ${DB_POOL_MAX_LIFETIME_MS:1800000}
+      leak-detection-threshold: 60000
+      pool-name: PaperErpHikariPool
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: false
         jdbc:
           time_zone: UTC
   flyway:
-    enabled: true
-    baseline-on-migrate: true
+    enabled: ${FLYWAY_ENABLED:true}
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:false}
     locations: classpath:db/migration
-
-server:
-  port: ${SERVER_PORT:8080}
-  address: 0.0.0.0 # Binds to all network interfaces for LAN device access
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT_MS:2000}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT_MS:2000}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
+      roles: ADMIN
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET:dGhpcy1pcy1hLXNhZmUtZGVmYXVsdC0yNTYtYml0LWtleS1mb3ItZGV2LW9ubHktZG8tbm90LXVzZS1pbi1wcm9kdWN0aW9u}
+    expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:15}
+    refresh-expiration-hours: ${APP_REFRESH_TOKEN_EXPIRATION_HOURS:8}
+    cookie-secure: ${APP_COOKIE_SECURE:false}
+    cookie-same-site: ${APP_COOKIE_SAME_SITE:Lax}
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  rate-limiting:
+    backend: ${RATE_LIMITING_BACKEND:redis}
+    redis-failure-mode: ${RATE_LIMITING_REDIS_FAILURE_MODE:fail-closed}
+    lockout-duration-seconds: ${RATE_LIMITING_LOCKOUT_SECONDS:900}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
