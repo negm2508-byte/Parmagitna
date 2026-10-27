@@ -53,7 +53,9 @@ public class TenantRlsAspect {
         if (isSystemOrPreAuth) {
             // System background worker or authentication service
             if (serviceName.contains("OutboxService")) {
-                applyPostgresRlsSetting("SYSTEM");
+                if (!TransactionSynchronizationManager.hasResource(RLS_SYNC_KEY)) {
+                    applyPostgresRlsSetting("SYSTEM");
+                }
             }
             return pjp.proceed();
         }
@@ -79,9 +81,13 @@ public class TenantRlsAspect {
 
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
             String boundTenant = (String) TransactionSynchronizationManager.getResource(RLS_SYNC_KEY);
-            if (tenantIdStr.equals(boundTenant)) {
-                // Already established on this transaction
-                return;
+            if (boundTenant != null) {
+                // An active RLS setting is already established on this transaction.
+                // Preserve it for nested calls and do not attempt duplicate binding.
+                if (tenantIdStr.equals(boundTenant) || "SYSTEM".equals(tenantIdStr)) {
+                    return;
+                }
+                TransactionSynchronizationManager.unbindResourceIfPossible(RLS_SYNC_KEY);
             }
 
             executeSetConfig(tenantIdStr);
